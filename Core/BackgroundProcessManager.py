@@ -30,8 +30,12 @@ def AddNewTrain(rawDataArray, day):
     return nowDictSize
 
 def GetStoredTrain(processId):
-    if LearningManager.ProcessResultGetter(processId) == DefineManager.ALGORITHM_STATUS_DONE:
+
+    processStatus = LearningManager.ProcessResultGetter(processId)[1]
+    processResult = LearningManager.ProcessResultGetter(processId)[0]
+
+    if processStatus == DefineManager.ALGORITHM_STATUS_DONE:
         # LoggingManager.PrintLogMessage("Core", "GetStoredTrain", "dic: " + str(processingQueueDict[processId]), DefineManager.LOG_LEVEL_INFO)
-        return processingQueueDict[processId]
+        return processResult
     else:
         return []

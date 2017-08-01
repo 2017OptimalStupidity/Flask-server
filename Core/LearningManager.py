@@ -6,4 +6,4 @@ def LearningModuleRunner(rawArrayDatas, processId, day):
     return
 
 def ProcessResultGetter(processId):
-    return "done"
+    return [[], 1]
