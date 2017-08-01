@@ -1,5 +1,6 @@
 from . import routes
+from FrontEnd import HomePage
 
 @routes.route("/")
-def HelloWorld():
-    return "Hello world"
+def IndexPage():
+    return HomePage.RenderIndexPage()
