@@ -6,4 +6,4 @@ def LearningModuleRunner(rawArrayDatas, processId, day):
     return
 
 def ProcessResultGetter(processId):
-    return [[], 1]
+    return [[], DefineManager.ALGORITHM_STATUS_DONE]
