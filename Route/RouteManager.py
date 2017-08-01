@@ -14,10 +14,10 @@ def IndexPage():
 def UploadRawDatas():
     content = request.get_json(silent=True)
     LoggingManager.PrintLogMessage("RouteManager", "UploadRawDatas", "json data: " + str(content), DefineManager.LOG_LEVEL_INFO)
-    return BackgroundProcessManager.UploadRawDatas(content['Data'])
+    return BackgroundProcessManager.UploadRawDatas(content['Data'], content['Day'])
 
 @routes.route("/forecast/", methods=['POST'])
 def ForecastDatas():
     content = request.get_json(silent=True)
     LoggingManager.PrintLogMessage("RouteManager", "ForecastDatas", "json data: " + str(content), DefineManager.LOG_LEVEL_INFO)
-    return BackgroundProcessManager.ForecastDatas(content['ProcessId'], content['Day'])
+    return BackgroundProcessManager.ForecastDatas(content['ProcessId'])
