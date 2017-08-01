@@ -11,10 +11,10 @@ def IndexPage():
 def UploadRawDatas():
     content = request.get_json(silent=True)
     print (content)
-    return BackgroundProcessManager.UploadRawDatas()
+    return BackgroundProcessManager.UploadRawDatas(content['Data'])
 
 @routes.route("/forecast/", methods=['POST'])
 def ForecastDatas():
     content = request.get_json(silent=True)
     print (content)
-    return BackgroundProcessManager.ForecastDatas()
+    return BackgroundProcessManager.ForecastDatas(content['ProcessId'], content['Day'])

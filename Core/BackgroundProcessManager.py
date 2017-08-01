@@ -1,7 +1,7 @@
 import json
 
-def UploadRawDatas():
+def UploadRawDatas(rawDataArray):
     return json.dumps({"Result": 1})
 
-def ForecastDatas():
+def ForecastDatas(processId, day):
     return json.dumps({"Status": "Done", "Result": []})
