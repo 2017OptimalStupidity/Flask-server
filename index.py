@@ -1,10 +1,13 @@
 from flask import Flask
 from Settings import DefineManager
-app = Flask(__name__)
+from Route import *
+import imp
+import sys
 
-@app.route('/')
-def hello_world():
-    return 'Hello World!'
+imp.reload(sys)
+
+app = Flask(__name__)
+app.register_blueprint(routes)
 
 if __name__ == '__main__':
 	app.debug = True
