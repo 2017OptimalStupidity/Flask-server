@@ -104,10 +104,40 @@ def StoreOutputData(processId = 0, resultArrayData = [], status = DefineManager.
         LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreOutputData", "connection dead", DefineManager.LOG_LEVEL_WARN)
     return False
 
-GetFirebaseConnection(DefineManager.FIREBASE_DOMAIN)
-GetLastProcessId()
-UpdateLastProcessId(5)
-CreateNewProcessTable(2)
-StoreInputData(2, [1, 2, 3], 2)
-StoreOutputData(2, [3, 4], DefineManager.ALGORITHM_STATUS_DONE)
-CloseFirebaseConnection()
+def GetOutputDataStatus(processId = 0):
+    global firebaseDatabase
+
+    if IsConnectionAlive():
+        try:
+            outputStatus = firebaseDatabase.get('/' + str(processId) + '/outputData/status', None)
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "data status loaded: " + str(outputStatus), DefineManager.LOG_LEVEL_INFO)
+            return outputStatus
+        except:
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "there is problem to load status", DefineManager.LOG_LEVEL_ERROR)
+    else:
+        LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "connection dead", DefineManager.LOG_LEVEL_WARN)
+    return DefineManager.NOT_AVAILABLE
+
+def GetOutputDataArray(processId = 0):
+    global firebaseDatabase
+
+    if IsConnectionAlive():
+        try:
+            outputArray = firebaseDatabase.get('/' + str(processId) + '/outputData/data', None)
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "data loaded", DefineManager.LOG_LEVEL_INFO)
+            return outputArray
+        except:
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "there is problem to load status", DefineManager.LOG_LEVEL_ERROR)
+    else:
+        LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "connection dead", DefineManager.LOG_LEVEL_WARN)
+    return []
+
+# GetFirebaseConnection(DefineManager.FIREBASE_DOMAIN)
+# GetLastProcessId()
+# UpdateLastProcessId(5)
+# CreateNewProcessTable(2)
+# StoreInputData(2, [1, 2, 3], 2)
+# StoreOutputData(2, [3, 4], DefineManager.ALGORITHM_STATUS_DONE)
+# GetOutputDataStatus(2)
+# GetOutputDataArray(2)
+# CloseFirebaseConnection()
