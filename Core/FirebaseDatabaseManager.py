@@ -48,7 +48,22 @@ def GetLastProcessId():
         LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetLastProcessId", "connection dead", DefineManager.LOG_LEVEL_WARN)
         return DefineManager.NOT_AVAILABLE
 
+def UpdateLastProcessId(lastProcessId):
+    global firebaseDatabase
+
+    if IsConnectionAlive():
+        try:
+            postResult = firebaseDatabase.patch('/', {'lastProcessId': lastProcessId})
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "UpdateLastProcessId", "last process id updated: " + str(lastProcessId), DefineManager.LOG_LEVEL_INFO)
+            return postResult
+        except:
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "UpdateLastProcessId", "there is problem to post data", DefineManager.LOG_LEVEL_ERROR)
+    else:
+        LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "UpdateLastProcessId", "connection dead", DefineManager.LOG_LEVEL_WARN)
+        return DefineManager.NOT_AVAILABLE
+
 # https://i2max-project.firebaseio.com/
 firebaseDatabase = GetFirebaseConnection('https://i2max-project.firebaseio.com/')
 GetLastProcessId()
+UpdateLastProcessId(5)
 CloseFirebaseConnection()
