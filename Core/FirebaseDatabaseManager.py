@@ -4,7 +4,7 @@ from Settings import DefineManager
 
 firebaseDatabase = None
 
-def GetFirebaseConnection(firebaseAddress):
+def GetFirebaseConnection(firebaseAddress = ""):
     global firebaseDatabase
 
     LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetFirebaseConnection", "getting firebase connection", DefineManager.LOG_LEVEL_INFO)
@@ -48,7 +48,7 @@ def GetLastProcessId():
         LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetLastProcessId", "connection dead", DefineManager.LOG_LEVEL_WARN)
         return DefineManager.NOT_AVAILABLE
 
-def UpdateLastProcessId(lastProcessId):
+def UpdateLastProcessId(lastProcessId = 0):
     global firebaseDatabase
 
     if IsConnectionAlive():
@@ -62,8 +62,39 @@ def UpdateLastProcessId(lastProcessId):
         LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "UpdateLastProcessId", "connection dead", DefineManager.LOG_LEVEL_WARN)
         return DefineManager.NOT_AVAILABLE
 
+def CreateNewProcessTable(processId = 0):
+    global firebaseDatabase
+
+    if IsConnectionAlive():
+        try:
+            postResult = firebaseDatabase.patch('/', {str(processId): {'inputData': {'data': [], 'day': 0}, 'outputData': {'data': [], 'status': DefineManager.ALGORITHM_STATUS_WORKING}}})
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "CreateNewProcessTable", "creating new table", DefineManager.LOG_LEVEL_INFO)
+            return True
+        except:
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "CreateNewProcessTable", "there is problem to create table", DefineManager.LOG_LEVEL_ERROR)
+    else:
+        LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "CreateNewProcessTable", "connection dead", DefineManager.LOG_LEVEL_WARN)
+    return False
+
+def StoreInputData(processId = 0, rawArrayData = [], day = 0):
+    global firebaseDatabase
+
+    if IsConnectionAlive():
+        try:
+            postResult = firebaseDatabase.patch('/' + str(processId) + '/inputData', {'data': rawArrayData, 'day': day})
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreInputData", "saved data", DefineManager.LOG_LEVEL_INFO)
+            return True
+        except:
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreInputData", "there is problem to store input data", DefineManager.LOG_LEVEL_ERROR)
+    else:
+        LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreInputData", "connection dead", DefineManager.LOG_LEVEL_WARN)
+    return False
+
+
 # https://i2max-project.firebaseio.com/
-firebaseDatabase = GetFirebaseConnection('https://i2max-project.firebaseio.com/')
+firebaseDatabase = GetFirebaseConnection(DefineManager.FIREBASE_DOMAIN)
 GetLastProcessId()
 UpdateLastProcessId(5)
+CreateNewProcessTable(2)
+StoreInputData(2, [1, 2, 3], 2)
 CloseFirebaseConnection()
