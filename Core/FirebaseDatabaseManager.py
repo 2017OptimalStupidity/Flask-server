@@ -90,11 +90,24 @@ def StoreInputData(processId = 0, rawArrayData = [], day = 0):
         LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreInputData", "connection dead", DefineManager.LOG_LEVEL_WARN)
     return False
 
+def StoreOutputData(processId = 0, resultArrayData = [], status = DefineManager.ALGORITHM_STATUS_WORKING):
+    global firebaseDatabase
 
-# https://i2max-project.firebaseio.com/
-firebaseDatabase = GetFirebaseConnection(DefineManager.FIREBASE_DOMAIN)
+    if IsConnectionAlive():
+        try:
+            postResult = firebaseDatabase.patch('/' + str(processId) + '/outputData', {'data': resultArrayData, 'status': status})
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreOutputData", "saved data", DefineManager.LOG_LEVEL_INFO)
+            return True
+        except:
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreOutputData", "there is problem to store output data", DefineManager.LOG_LEVEL_ERROR)
+    else:
+        LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreOutputData", "connection dead", DefineManager.LOG_LEVEL_WARN)
+    return False
+
+GetFirebaseConnection(DefineManager.FIREBASE_DOMAIN)
 GetLastProcessId()
 UpdateLastProcessId(5)
 CreateNewProcessTable(2)
 StoreInputData(2, [1, 2, 3], 2)
+StoreOutputData(2, [3, 4], DefineManager.ALGORITHM_STATUS_DONE)
 CloseFirebaseConnection()
