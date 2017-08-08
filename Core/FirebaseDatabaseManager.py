@@ -37,8 +37,18 @@ def IsConnectionAlive():
     else:
         return False
 
+def GetLastProcessId():
+    global firebaseDatabase
+
+    if IsConnectionAlive():
+        lastProcessId = firebaseDatabase.get('/lastProcessId', None)
+        LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetLastProcessId", "last process id: " + str(lastProcessId), DefineManager.LOG_LEVEL_INFO)
+        return lastProcessId
+    else:
+        LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetLastProcessId", "connection dead", DefineManager.LOG_LEVEL_WARN)
+        return DefineManager.NOT_AVAILABLE
+
 # https://i2max-project.firebaseio.com/
 firebaseDatabase = GetFirebaseConnection('https://i2max-project.firebaseio.com/')
-firebaseDatabaseResult = firebaseDatabase.get('/1', None)
-print (firebaseDatabaseResult)
+GetLastProcessId()
 CloseFirebaseConnection()
