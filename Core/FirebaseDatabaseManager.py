@@ -9,7 +9,7 @@ def GetFirebaseConnection(firebaseAddress):
 
     LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetFirebaseConnection", "getting firebase connection", DefineManager.LOG_LEVEL_INFO)
 
-    if firebaseDatabase == None:
+    if IsConnectionAlive() != True:
         try:
             firebaseDatabase = firebase.FirebaseApplication(firebaseAddress, None)
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetFirebaseConnection", "connection successful", DefineManager.LOG_LEVEL_INFO)
@@ -24,11 +24,18 @@ def CloseFirebaseConnection():
 
     LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "CloseFirebaseConnection", "closing firebase connection", DefineManager.LOG_LEVEL_INFO)
 
-    if firebaseDatabase != None:
+    if IsConnectionAlive():
         firebaseDatabase = None
         LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "CloseFirebaseConnection", "connection closed", DefineManager.LOG_LEVEL_INFO)
     else:
         LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "CloseFirebaseConnection", "connection already closed", DefineManager.LOG_LEVEL_WARN)
+
+def IsConnectionAlive():
+    global firebaseDatabase
+    if firebaseDatabase != None:
+        return True
+    else:
+        return False
 
 # https://i2max-project.firebaseio.com/
 firebaseDatabase = GetFirebaseConnection('https://i2max-project.firebaseio.com/')
