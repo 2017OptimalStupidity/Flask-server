@@ -42,8 +42,10 @@ def AddNewTrain(rawDataArray, rawDateArray, day):
 
 def GetStoredTrain(processId):
 
-    processStatus = LearningManager.ProcessResultGetter(processId)
     processResult = LearningManager.ProcessResultGetter(processId)
+
+    processStatus = processResult[1]
+    processData = processResult[0]
 
     # processStatus = FirebaseDatabaseManager.GetOutputDataStatus(processId)
     # processResult = FirebaseDatabaseManager.GetOutputDataArray(processId)
@@ -53,4 +55,4 @@ def GetStoredTrain(processId):
     #     return processResult
     # else:
     #     return []
-    return processStatus, processResult
+    return processStatus, processData
