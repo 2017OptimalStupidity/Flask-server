@@ -14,7 +14,7 @@ def IndexPage():
 def UploadRawDatas():
     content = request.get_json(silent=True)
     LoggingManager.PrintLogMessage("RouteManager", "UploadRawDatas", "json data: " + str(content), DefineManager.LOG_LEVEL_INFO)
-    return BackgroundProcessManager.UploadRawDatas(content['Data'], content['Day'])
+    return BackgroundProcessManager.UploadRawDatas(content['Data'], content['Date'], content['Day'])
 
 @routes.route("/forecast/", methods=['POST'])
 def ForecastDatas():

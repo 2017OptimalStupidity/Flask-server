@@ -6,10 +6,10 @@ from . import LearningManager, FirebaseDatabaseManager
 
 FirebaseDatabaseManager.GetFirebaseConnection(DefineManager.FIREBASE_DOMAIN)
 
-def UploadRawDatas(rawDataArray, day):
-    LoggingManager.PrintLogMessage("BackgroundProcessManager", "UploadRawDatas", "parameter: " + str(rawDataArray) + ", day " + str(day), DefineManager.LOG_LEVEL_INFO)
+def UploadRawDatas(rawDataArray, rawDateArray, day):
+    LoggingManager.PrintLogMessage("BackgroundProcessManager", "UploadRawDatas", "data: " + str(rawDataArray) + ", date: " + str(rawDateArray) + ", day " + str(day), DefineManager.LOG_LEVEL_INFO)
 
-    queueId = AddNewTrain(rawDataArray, day)
+    queueId = AddNewTrain(rawDataArray, rawDateArray, day)
 
     return json.dumps({"Result": queueId})
 
@@ -27,13 +27,14 @@ def ForecastDatas(processId):
 
     return json.dumps({"Status": status, "Result": forecastedData})
 
-def AddNewTrain(rawDataArray, day):
+def AddNewTrain(rawDataArray, rawDateArray, day):
     nowDictSize = FirebaseDatabaseManager.GetLastProcessId() + 1
     FirebaseDatabaseManager.CreateNewProcessTable(nowDictSize)
     FirebaseDatabaseManager.StoreInputData(nowDictSize, rawDataArray, day)
     FirebaseDatabaseManager.UpdateLastProcessId(nowDictSize)
 
-    threadOfLearn = threading.Thread(target=LearningManager.LearningModuleRunner, args=(rawDataArray, nowDictSize, day))
+    rawDataAndDateArray = [rawDateArray, rawDataArray]
+    threadOfLearn = threading.Thread(target=LearningManager.LearningModuleRunner, args=(rawDataAndDateArray, nowDictSize, day))
     threadOfLearn.start()
 
     return nowDictSize
