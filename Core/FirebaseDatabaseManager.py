@@ -67,7 +67,7 @@ def CreateNewProcessTable(processId = 0):
 
     if IsConnectionAlive():
         try:
-            postResult = firebaseDatabase.patch('/', {str(processId): {'inputData': {'data': [], 'day': 0}, 'outputData': {'data': [], 'status': DefineManager.ALGORITHM_STATUS_WORKING}}})
+            postResult = firebaseDatabase.patch('/', {str(processId): {'inputData': {'data': [], 'date': [], 'day': 0}, 'outputData': {'data': [], 'status': DefineManager.ALGORITHM_STATUS_WORKING}}})
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "CreateNewProcessTable", "creating new table", DefineManager.LOG_LEVEL_INFO)
             return True
         except:
@@ -76,12 +76,12 @@ def CreateNewProcessTable(processId = 0):
         LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "CreateNewProcessTable", "connection dead", DefineManager.LOG_LEVEL_WARN)
     return False
 
-def StoreInputData(processId = 0, rawArrayData = [], day = 0):
+def StoreInputData(processId = 0, rawArrayData = [], rawArrayDate = [], day = 0):
     global firebaseDatabase
 
     if IsConnectionAlive():
         try:
-            postResult = firebaseDatabase.patch('/' + str(processId) + '/inputData', {'data': rawArrayData, 'day': day})
+            postResult = firebaseDatabase.patch('/' + str(processId) + '/inputData', {'data': rawArrayData, 'date': rawArrayDate, 'day': day})
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreInputData", "saved data", DefineManager.LOG_LEVEL_INFO)
             return True
         except:
@@ -90,12 +90,12 @@ def StoreInputData(processId = 0, rawArrayData = [], day = 0):
         LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreInputData", "connection dead", DefineManager.LOG_LEVEL_WARN)
     return False
 
-def StoreOutputData(processId = 0, resultArrayData = [], status = DefineManager.ALGORITHM_STATUS_WORKING):
+def StoreOutputData(processId = 0, resultArrayData = [], resultArrayDate = [], status = DefineManager.ALGORITHM_STATUS_WORKING):
     global firebaseDatabase
 
     if IsConnectionAlive():
         try:
-            postResult = firebaseDatabase.patch('/' + str(processId) + '/outputData', {'data': resultArrayData, 'status': status})
+            postResult = firebaseDatabase.patch('/' + str(processId) + '/outputData', {'data': resultArrayData, 'date': resultArrayDate, 'status': status})
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreOutputData", "saved data", DefineManager.LOG_LEVEL_INFO)
             return True
         except:
@@ -124,6 +124,20 @@ def GetOutputDataArray(processId = 0):
     if IsConnectionAlive():
         try:
             outputArray = firebaseDatabase.get('/' + str(processId) + '/outputData/data', None)
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "data loaded", DefineManager.LOG_LEVEL_INFO)
+            return outputArray
+        except:
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "there is problem to load status", DefineManager.LOG_LEVEL_ERROR)
+    else:
+        LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "connection dead", DefineManager.LOG_LEVEL_WARN)
+    return []
+
+def GetOutputDateArray(processId = 0):
+    global firebaseDatabase
+
+    if IsConnectionAlive():
+        try:
+            outputArray = firebaseDatabase.get('/' + str(processId) + '/outputData/date', None)
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "data loaded", DefineManager.LOG_LEVEL_INFO)
             return outputArray
         except:

@@ -22,15 +22,16 @@ def ForecastDatas(processId):
 
     if forcastStatus == DefineManager.ALGORITHM_STATUS_DONE:
         status = "Done"
+        return json.dumps({"Status": status, "Result": forecastedData[DefineManager.DATA_SAVED_POINT], "Date": forecastedData[DefineManager.DATE_SAVED_POINT]})
     else:
         forecastedData = []
+        return json.dumps({"Status": status, "Result": forecastedData, "Date": []})
 
-    return json.dumps({"Status": status, "Result": forecastedData})
 
 def AddNewTrain(rawDataArray, rawDateArray, day):
     nowDictSize = FirebaseDatabaseManager.GetLastProcessId() + 1
     FirebaseDatabaseManager.CreateNewProcessTable(nowDictSize)
-    FirebaseDatabaseManager.StoreInputData(nowDictSize, rawDataArray, day)
+    FirebaseDatabaseManager.StoreInputData(nowDictSize, rawDataArray, rawDateArray, day)
     FirebaseDatabaseManager.UpdateLastProcessId(nowDictSize)
 
     rawDataAndDateArray = [rawDateArray, rawDataArray]
@@ -41,8 +42,11 @@ def AddNewTrain(rawDataArray, rawDateArray, day):
 
 def GetStoredTrain(processId):
 
-    processStatus = FirebaseDatabaseManager.GetOutputDataStatus(processId)
-    processResult = FirebaseDatabaseManager.GetOutputDataArray(processId)
+    processStatus = LearningManager.ProcessResultGetter(processId)
+    processResult = LearningManager.ProcessResultGetter(processId)
+
+    # processStatus = FirebaseDatabaseManager.GetOutputDataStatus(processId)
+    # processResult = FirebaseDatabaseManager.GetOutputDataArray(processId)
     #
     # if processStatus == DefineManager.ALGORITHM_STATUS_DONE:
     #     # LoggingManager.PrintLogMessage("Core", "GetStoredTrain", "dic: " + str(processingQueueDict[processId]), DefineManager.LOG_LEVEL_INFO)
