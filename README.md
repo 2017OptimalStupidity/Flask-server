@@ -58,6 +58,11 @@ pip3.5 install Cython==0.26
 pip3.5 install fbprophet==0.1.1
 ```
 
+- Install pystan >= 2.14
+```
+pip3.5 install pystan==2.14
+```
+
 And run.
 
 ```
