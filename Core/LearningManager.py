@@ -8,14 +8,14 @@ def LearningModuleRunner(rawArrayDatas, processId, day):
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "start of learning #" + str(processId), DefineManager.LOG_LEVEL_INFO)
 
     numOfAlgorithmModules=3
-    rmse={} #dictionary
-    result={} #dictionary
+    rmse={}
+    result={}
     test_forecast={}
+    train_size=int(len(rawArrayDatas) * 0.7)
+    test_size=len(rawArrayDatas)-train_size
 
-
-    train = rawArrayDatas[:int(len(rawArrayDatas) * 0.7)]
-    test = rawArrayDatas[int(len(rawArrayDatas) * 0.7):]
-
+    dataY = rawArrayDatas[1]
+    testY = dataY[train_size:]
     ############################################################### LSTM
     # raw data를 preprocessed data로 변환하는 과정
         # [[날짜],[판매량]] 형태로 되어있는 이차원 배열을 pandas.core.frame.DataFrame의 형태로 변환
@@ -23,58 +23,56 @@ def LearningModuleRunner(rawArrayDatas, processId, day):
         # 2. [년, 월, 요일, 판매량]
         # 3. 추후) + 날씨, 경제 등 (함수)
 
-    preprocessedData= prepareLstm(rawArrayDatas)
+    XY=prepareLstm(rawArrayDatas)
+    X=XY[0][:train_size]
+    Y = XY[1][:train_size]
+    trainXY=[X,Y]
+    #trainXY는 XY에서 전체 행의 0.7 자른 것
     # 계산
-    test_forecast['LSTM'] = Lstm(preprocessedData=preprocessedData, forecastDay=len(test))
+    test_forecast['Lstm'] = Lstm(preprocessedData=trainXY, forecastDay=test_size)
+    result['Lstm'] = Lstm(preprocessedData=XY, forecastDay=day)
 
-
-    # 두개 출력(test를 위한 것, 실제 예측)
-    test_forecast['LSTM']
-    result['LSTM']=[]
-
+    #평가
     testRmse=0
-    for i in range(len(test)):
-        testRmse=testRmse+(test[i]-test_forecast['LSTM'][i])**2
-    rmse['LSTM'] = testRmse
+    for i in range(test_size):
+        testRmse=testRmse+(testY[i]-test_forecast['Lstm'][i])**2
+    rmse['Lstm'] = testRmse
 
+    ################################################################ BAYSEIAN
 
+    #raw data를 preprocessed data(ds-y)로 변환하는 과정
+         #[[날짜],[판매량]] 형태로 되어있는 이차원 배열을 pandas.core.frame.DataFrame의 형태로 변환
 
-
-
-    # BAYSEIAN
-    # 1. ds-y
-
-    #raw data를 preprocessed data로 변환하는 과정
-    #[[날짜],[판매량]] 형태로 되어있는 이차원 배열을 pandas.core.frame.DataFrame의 형태로 변환
-
+    XY = prepareBayseian(rawArrayDatas)
+    X=XY[0][:train_size]
+    Y = XY[1][:train_size]
+    trainXY=[X,Y]
+    #trainXY는 XY에서 전체 행의 0.7 자른 것
     #계산
-    test_forecast['BAYSEIAN']=Bayseian(preprocessedData=, forecastDay=len(test))
+    test_forecast['Bayseian'] = Lstm(preprocessedData=trainXY, forecastDay=test_size)
+    result['Bayseian'] = Lstm(preprocessedData=XY, forecastDay=day)
 
-
-
-
-    result['BAYSEIAN'] = []
-    rmse['BAYSEIAN'] = testRmse
-
-
-    result['BAYSEIAN']=[]
-
+    #평가
     testRmse=0
-    for i in range(len(test)):
-        testRmse=testRmse+(test[i]-test_forecast['BAYSEIAN'][i])**2
-    rmse['BAYSEIAN'] = testRmse
+    for i in range(test_size):
+        testRmse=testRmse+(testY[i]-test_forecast['BAYSEIAN'][i])**2
+    rmse['Bayseian'] = testRmse
 
-    # 그 외 (ex SVM)
+    ############################################################### 그 외 (ex SVM)
     # 1. ds-y
 
+######################################################################################################################
     # 세개에서 나온 결과값을 다 취합해서 비교해서 가장 좋은 결과를 firebase에 저장
     # 가장 좋은 결과의 평가기준은 예측값과 test set의 rmse
-    min = rmse['LSTM']
-    for i in result.keys():
+    min = rmse['Lstm']
+    for i in rmse.keys():
         if(min>rmse[i]):
             min=rmse[i]
             z=i
-    firebase.store(result[z])
+
+    result=result[z]
+
+    firebase.store(result[z],processId)
     return
 
 def ProcessResultGetter(processId):
@@ -84,28 +82,34 @@ def ProcessResultGetter(processId):
         return [[],[]], DefineManager.ALGORITHM_STATUS_DONE
 
 
+def prepareLstm(dsY):
+    ds = dsY[0]
+    # ds-->year, month, dayOfWeek 추출 #TODO
 
-
-def prepareLstm(rawArrayDatas):
-
-
-    preprocessedData
+    size=len(dsY)
+    year = np.random.beta(2000, 2017, size) * (2017 - 2000)
+    month = np.random.beta(1, 12, size) * (12 - 1)
+    dayOfWeek = np.random.beta(0, 6, size) * (6 - 0)
+    y = dsY[1]
+    # 이차원 배열
+    preprocessedData=[year, month, dayOfWeek, y]
     return preprocessedData
 
 
-def prepareBayseian(rawArrayDatas):
-    rawArrayDatas = [[ds], [y]]
+def prepareBayseian(dsY):
+    ds = dsY[0]
+    y = dsY[1]
     sales = list(zip(ds, y))
-    preprocessedData
+    preprocessedData= pd.DataFrame(data = sales, columns=['ds', 'y'])
     return preprocessedData
 
 
 def Lstm(preprocessedData,forecastDay):
     forecast=[]
     #일단은 random 출력
-    min=min(preprocessedData)
-    max=max(preprocessedData)
-    return np.random.beta(min, max, forecastDay)*(max-min)
+    min=1 #min(preprocessedData[-1])
+    max=70 #max(preprocessedData[-1])
+    return list(np.random.beta(min, max, forecastDay)*(max-min))
 
 def Bayseian(preprocessedData,forecastDay):
     forecast=[]
