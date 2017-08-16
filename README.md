@@ -52,7 +52,17 @@ flask run
 
 ## Running the tests
 
-The testmodule using `pytest` will update.
+This project use pytest lib.
+
+Install pytest
+```
+pip3.5 install pytest
+```
+
+Run test
+```
+pytest ConfTest.py
+```
 
 ## Deployment
 
