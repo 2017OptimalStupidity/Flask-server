@@ -38,6 +38,11 @@ pip3.5 install requests==2.18.3
 pip3.5 install tensorflow==1.2.1
 ```
 
+- Install pytest-flask >=3.2.1
+```
+pip3.5 install pytest-flask==3.2.1
+```
+
 And run.
 
 ```
