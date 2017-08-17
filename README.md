@@ -43,6 +43,26 @@ pip3.5 install tensorflow==1.2.1
 pip3.5 install pytest-flask==3.2.1
 ```
 
+- Install pandas >= 0.20.3
+```
+pip3.5 install pandas==0.20.3
+```
+
+- Install Cython >= 0.26
+```
+pip3.5 install Cython==0.26
+```
+
+- Install fbprophet >= 0.1.1
+```
+pip3.5 install fbprophet==0.1.1
+```
+
+- Install pystan >= 2.14
+```
+pip3.5 install pystan==2.14
+```
+
 And run.
 
 ```

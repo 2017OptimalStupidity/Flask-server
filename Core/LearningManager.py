@@ -77,7 +77,7 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     FirebaseDatabaseManager.StoreOutputData(processId,forecastDate,realForecast,DefineManager.ALGORITHM_STATUS_DONE )
     return
 
-def ProcessResultGetter(processId):
+def ProcessResultGetter(processId):#TODO: Request processid:2 -> {"Result": [3, 4], "Status": "Done", "Date": null}
 
     status=FirebaseDatabaseManager.GetOutputDataStatus(processId)
 
@@ -99,7 +99,7 @@ def PrepareLstm(dsY):
     size=len(dsY)
     year = np.random.beta(2000, 2017, size) * (2017 - 2000)
     month = np.random.beta(1, 12, size) * (12 - 1)
-    dayOfWeek = np.random.beta(0, 6, size) * (6 - 0)
+    dayOfWeek = np.random.beta(3, 6, size) * (6 - 0)#TODO: ValueError: a <= 0, KeyError: 0
     y = dsY[1]
     # 이차원 배열
     preprocessedData=[year, month, dayOfWeek, y]
