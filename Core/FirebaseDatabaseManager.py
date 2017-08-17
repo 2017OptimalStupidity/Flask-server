@@ -67,7 +67,7 @@ def CreateNewProcessTable(processId = 0):
 
     if IsConnectionAlive():
         try:
-            postResult = firebaseDatabase.patch('/', {str(processId): {'inputData': {'data': [], 'date': [], 'day': 0}, 'outputData': {'data': [], 'status': DefineManager.ALGORITHM_STATUS_WORKING}}})
+            postResult = firebaseDatabase.patch('/', {str(processId): {'inputData': {'data': [], 'date': [], 'day': 0}, 'outputData': {'data': [], 'date': [], 'status': DefineManager.ALGORITHM_STATUS_WORKING}}})
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "CreateNewProcessTable", "creating new table", DefineManager.LOG_LEVEL_INFO)
             return True
         except:
