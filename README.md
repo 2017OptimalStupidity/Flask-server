@@ -63,6 +63,31 @@ pip3.5 install fbprophet==0.1.1
 pip3.5 install pystan==2.14
 ```
 
+### Ubuntu
+
+- Install gcc and g++
+```
+apt-get install g++ gcc
+```
+
+- Install python-dev
+```
+apt-get install python3-dev 
+```
+
+- Install python3-tk
+
+```
+apt-get install python3-tk
+```
+
+- Install a lot of things.
+```
+apt-get install python-dateutil python-docutils python-feedparser python-gdata python-jinja2 python-ldap python-libxslt1 python-lxml python-mako python-mock python-openid python-psycopg2 python-psutil python-pybabel python-pychart python-pydot python-pyparsing python-reportlab python-simplejson python-tz python-unittest2 python-vatnumber python-vobject python-webdav python-werkzeug python-xlwt python-yaml python-zsi
+apt-get install libxml2-dev libxslt1-dev
+apt-get install build-essential autoconf libtool pkg-config python-opengl python-imaging python-pyrex python-pyside.qtopengl idle-python2.7 qt4-dev-tools qt4-designer libqtgui4 libqtcore4 libqt4-xml libqt4-test libqt4-script libqt4-network libqt4-dbus python-qt4 python-qt4-gl libgle3 python-dev libssl-dev
+```
+
 And run.
 
 ```
