@@ -125,6 +125,9 @@ def GetOutputDataArray(processId = 0):
         try:
             outputArray = firebaseDatabase.get('/' + str(processId) + '/outputData/data', None)
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "data loaded", DefineManager.LOG_LEVEL_INFO)
+
+            if outputArray == None:
+                return []
             return outputArray
         except:
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "there is problem to load status", DefineManager.LOG_LEVEL_ERROR)
@@ -139,6 +142,9 @@ def GetOutputDateArray(processId = 0):
         try:
             outputArray = firebaseDatabase.get('/' + str(processId) + '/outputData/date', None)
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "data loaded", DefineManager.LOG_LEVEL_INFO)
+
+            if outputArray == None:
+                return []
             return outputArray
         except:
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "there is problem to load status", DefineManager.LOG_LEVEL_ERROR)
