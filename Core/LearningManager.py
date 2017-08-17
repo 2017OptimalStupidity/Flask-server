@@ -5,18 +5,18 @@ import pandas as pd
 import numpy as np
 from fbprophet import Prophet
 
-def LearningModuleRunner(rawArrayDatas, processId, day):
+def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "start of learning #" + str(processId), DefineManager.LOG_LEVEL_INFO)
 
     numOfAlgorithmModules=3
     rmse={}
-    result={}
-    test_forecast={}
-    train_size=int(len(rawArrayDatas) * 0.7)
-    test_size=len(rawArrayDatas)-train_size
+    realForecast={}
+    mockForecast={}
+    trainSize=int(len(rawArrayDatas) * 0.7)
+    testSize=len(rawArrayDatas)-trainSize
 
     dataY = rawArrayDatas[1]
-    testY = dataY[train_size:]
+    testY = dataY[trainSize:]
     ############################################################### LSTM
     # raw data를 preprocessed data로 변환하는 과정
         # [[날짜],[판매량]] 형태로 되어있는 이차원 배열을 pandas.core.frame.DataFrame의 형태로 변환
@@ -25,39 +25,38 @@ def LearningModuleRunner(rawArrayDatas, processId, day):
         # 3. 추후) + 날씨, 경제 등 (함수)
 
     XY=PrepareLstm(rawArrayDatas)
-    X=XY[0][:train_size]
-    Y = XY[1][:train_size]
+    X=XY[0][:trainSize]
+    Y = XY[1][:trainSize]
     trainXY=[X,Y]
     #trainXY는 XY에서 전체 행의 0.7 자른 것
 
     # 계산
-    test_forecast['Lstm'] = Lstm(preprocessedData=trainXY, forecastDay=test_size)
-    result['Lstm'] = Lstm(preprocessedData=XY, forecastDay=day)
+    mockForecast['Lstm'] = Lstm(preprocessedData=trainXY, forecastDay=testSize)
+    realForecast['Lstm'] = Lstm(preprocessedData=XY, forecastDay=forecastDay)
 
     #평가
     testRmse=0
-    for i in range(test_size):
-        testRmse=testRmse+(testY[i]-test_forecast['Lstm'][i])**2
+    for i in range(testSize):
+        testRmse=testRmse+ (testY[i] - mockForecast['Lstm'][i]) ** 2
     rmse['Lstm'] = testRmse
 
     ################################################################ BAYSEIAN
 
     #raw data를 preprocessed data(ds-y)로 변환하는 과정
          #[[날짜],[판매량]] 형태로 되어있는 이차원 배열을 pandas.core.frame.DataFrame의 형태로 변환
-
     XY = PrepareBayseian(rawArrayDatas)
-    X=XY[0][:train_size]
-    Y = XY[1][:train_size]
+    X=XY[0][:trainSize]
+    Y = XY[1][:trainSize]
     trainXY=[X,Y]
-    #trainXY는 XY에서 전체 행의 0.7 자른 것
+
     #계산
-    test_forecast['Bayseian'] = Bayseian(preprocessedData=trainXY, forecastDay=test_size)[0]
-    result['Bayseian'] = Bayseian(preprocessedData=XY, forecastDay=day)[0]
+    mockForecast['Bayseian'] = Bayseian(preprocessedData=trainXY, forecastDay=testSize)[0]
+    realForecast['Bayseian'] = Bayseian(preprocessedData=XY, forecastDay=forecastDay)[0]
 
     #평가
     testRmse=0
-    for i in range(test_size):
-        testRmse=testRmse+(testY[i]-test_forecast['BAYSEIAN'][i])**2
+    for i in range(testSize):
+        testRmse=testRmse+ (testY[i] - mockForecast['Bayseian'][i]) ** 2
     rmse['Bayseian'] = testRmse
 
     ############################################################### 그 외 (ex SVM)
@@ -72,10 +71,10 @@ def LearningModuleRunner(rawArrayDatas, processId, day):
             min=rmse[i]
             bestAlgorithmName=i
 
-    result=result[bestAlgorithmName]
+    realForecast=realForecast[bestAlgorithmName]
     #processId = 0, resultArrayData = [], resultArrayDate = [], status = DefineManager.ALGORITHM_STATUS_WORKING)
-    forecastDate= Bayseian(preprocessedData=XY, forecastDay=day)[1]
-    FirebaseDatabaseManager.StoreOutputData(processId,forecastDate,result,DefineManager.ALGORITHM_STATUS_DONE )
+    forecastDate= Bayseian(preprocessedData=XY, forecastDay=forecastDay)[1]
+    FirebaseDatabaseManager.StoreOutputData(processId,forecastDate,realForecast,DefineManager.ALGORITHM_STATUS_DONE )
     return
 
 def ProcessResultGetter(processId):
