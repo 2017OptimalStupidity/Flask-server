@@ -16,10 +16,14 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     trainSize=int(len(rawArrayDatas[0])*0.7)
     testSize=len(rawArrayDatas[0])-trainSize
 
+    mockDs = rawArrayDatas[0][:trainSize]
+    mockY = list(np.log(rawArrayDatas[1][:trainSize]))
+    mockSales = list(zip(mockDs, mockY))
+
     ds=rawArrayDatas[0]
     y=list(np.log(rawArrayDatas[1]))
     sales=list(zip(ds, y))
-
+    mockPreprocessedData = pd.DataFrame(data=mockS  ales, columns=['ds', 'y'])
     preprocessedData=pd.DataFrame(data=sales, columns=['ds','y'])
     model=Prophet()
     model.fit(preprocessedData)
