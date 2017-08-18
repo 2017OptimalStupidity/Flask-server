@@ -28,8 +28,9 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
 
     mockModel = Prophet()
     mockModel.fit(mockPreprocessedData)
-    mockfuture = mockModel.make_future_dataframe(periods=testSize)
-    mockForecast
+    mockFuture = mockModel.make_future_dataframe(periods=testSize)
+    mockForecast= mockModel.predict(mockFuture)
+    mockForecast['Bayseian'] = [np.exp(y) for y in mockForecast['yhat'][-testSize:]]
 
     model=Prophet()
     model.fit(preprocessedData)
