@@ -126,6 +126,7 @@ def PrepareBayseian(dsY):
     ds = dsY[0]
     y = dsY[1]
     sales = list(zip(ds, y))
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BAYSEIANpreprocessing dsY to list succeed", DefineManager.LOG_LEVEL_INFO)
     preprocessedData= pd.DataFrame(data = sales, columns=['ds', 'y'])
     return preprocessedData
 
