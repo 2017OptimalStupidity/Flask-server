@@ -111,7 +111,16 @@ pytest ConfTest.py
 
 ## Deployment
 
-Add additional notes about how to deploy this on a live system
+Enter the ncloud server using ssh.
+
+Move to Flask-server directory.
+
+Make your permission as root.
+```
+sudo su
+```
+
+And run `./runner.sh`
 
 ## License
 
