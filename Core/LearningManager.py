@@ -16,14 +16,13 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
 
     testY= rawArrayDatas[1][trainSize:]
 ####################################################################################LSTM
-    mockMin = np.min(rawArrayDatas[1][:trainSize])
-    mockMax = np.max(rawArrayDatas[1][:trainSize])
-    mockForecastDictionary['LSTM'] = list(i min + np.random.beta(mockMin, mockMax) * (mockMax - mockMin))
+    mockMinData = np.min(rawArrayDatas[1][:trainSize])
+    mockMaxData = np.max(rawArrayDatas[1][:trainSize])
+    mockForecastDictionary['LSTM'] = [i+mockMinData for i in np.random.beta(mockMinData, mockMaxData, testSize)*(mockMaxData-mockMinData)]
 
-    min = np.min(rawArrayDatas[1])
-    max = np.max(rawArrayDatas[1])
-    realForecastDictionary['LSTM'] = list(min + np.random.beta(min, max, testSize) * (max - min))
-
+    minData = np.min(rawArrayDatas[1])
+    maxData = np.max(rawArrayDatas[1])
+    realForecastDictionary['LSTM'] = [i+minData for i in np.random.beta(minData, maxData, forecastDay)*(maxData-minData)]
 ####################################################################################BAYSEIAN
 
     mockDs = rawArrayDatas[0][:trainSize]
@@ -66,7 +65,7 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
         sum=0
         for yhat, y in v, testY:
             sum=sum+(yhat-y)**2
-        if sum<min:
+        if sum<minData:
             nameOfBestAlgorithm=k
 
     data = rawArrayDatas[1] + realForecastDictionary[nameOfBestAlgorithm]
