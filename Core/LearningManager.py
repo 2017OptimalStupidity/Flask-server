@@ -8,9 +8,8 @@ from fbprophet import Prophet
 def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "start of learning #" + str(processId), DefineManager.LOG_LEVEL_INFO)
 
-    mockForecast={}
+    testForecast={}
     rmse={}
-    forecast=[]
     realForecast={}
 
     trainSize=int(len(rawArrayDatas[0])*0.7)
@@ -19,23 +18,31 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     mockDs = rawArrayDatas[0][:trainSize]
     mockY = list(np.log(rawArrayDatas[1][:trainSize]))
     mockSales = list(zip(mockDs, mockY))
+    mockPreprocessedData = pd.DataFrame(data=mockSales, columns=['ds', 'y'])
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "traindata create success",
+                                   DefineManager.LOG_LEVEL_INFO)
 
     ds=rawArrayDatas[0]
     y=list(np.log(rawArrayDatas[1]))
     sales=list(zip(ds, y))
-    mockPreprocessedData = pd.DataFrame(data=mockSales, columns=['ds', 'y'])
     preprocessedData=pd.DataFrame(data=sales, columns=['ds','y'])
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "realdata create success",
+                                   DefineManager.LOG_LEVEL_INFO)
 
     mockModel = Prophet()
     mockModel.fit(mockPreprocessedData)
     mockFuture = mockModel.make_future_dataframe(periods=testSize)
     mockForecast= mockModel.predict(mockFuture)
-    mockForecast['Bayseian'] = [np.exp(y) for y in mockForecast['yhat'][-testSize:]]
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "mockforecast success",
+                                   DefineManager.LOG_LEVEL_INFO)
+    testForecast['Bayseian'] = [np.exp(y) for y in mockForecast['yhat'][-testSize:]]
 
     model=Prophet()
     model.fit(preprocessedData)
     future = model.make_future_dataframe(periods=forecastDay)
     forecast = model.predict(future)
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "realforecast success",
+                                   DefineManager.LOG_LEVEL_INFO)
     forecastData=[np.exp(y) for y in forecast['yhat'][-forecastDay:]]
     data=rawArrayDatas[1]+forecastData
     date = [d.strftime('%Y-%m-%d') for d in forecast['ds']]
@@ -43,7 +50,7 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     FirebaseDatabaseManager.StoreOutputData(processId, resultArrayData=data, resultArrayDate=date, status=DefineManager.ALGORITHM_STATUS_DONE)
     return
 
-def ProcessResultGetter(processId):#TODO: Request processid:2 -> {"Result": [3, 4], "Status": "Done", "Date": null}
+def ProcessResultGetter(processId):
 
     status=FirebaseDatabaseManager.GetOutputDataStatus(processId)
 
@@ -65,7 +72,7 @@ def PrepareLstm(dsY):
     size = len(dsY)
     year = np.random.beta(2000, 2017, size) * (2017 - 2000)
     month = np.random.beta(1, 12, size) * (12 - 1)
-    dayOfWeek = np.random.beta(3, 6, size) * (6 - 0)#TODO: ValueError: a <= 0, KeyError: 0
+    dayOfWeek = np.random.beta(3, 6, size) * (6 - 0)
     y = dsY[1]
     # 이차원 배열
     preprocessedData=[year, month, dayOfWeek, y]
