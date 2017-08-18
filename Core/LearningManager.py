@@ -128,6 +128,7 @@ def PrepareBayseian(dsY):
     sales = list(zip(ds, y))
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BAYSEIANpreprocessing dsY to list succeed", DefineManager.LOG_LEVEL_INFO)
     preprocessedData= pd.DataFrame(data = sales, columns=['ds', 'y'])
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BAYSEIANdataFrame succeed", DefineManager.LOG_LEVEL_INFO)
     return preprocessedData
 
 def Bayseian(preprocessedData, forecastDay):
@@ -136,9 +137,10 @@ def Bayseian(preprocessedData, forecastDay):
     model.fit(preprocessedData)
     future = model.make_future_dataframe(periods=forecastDay)
     forecast = future[-forecastDay:]
-
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BAYSEIAN forecast succeed", DefineManager.LOG_LEVEL_INFO)
     #forecastDay에 해당하는 date형식을 출력
     # (for firebase api: def StoreInputData(processId = 0, rawArrayData = [], rawArrayDate = [], day = 0))
     dateStamp = list(forecast['ds'][-forecastDay:])
     date = [p.strftime('%Y-%m-%d') for p in dateStamp]
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BAYSEIAN date retrieve succeed", DefineManager.LOG_LEVEL_INFO)
     return forecast, date
