@@ -24,8 +24,14 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     model=Prophet()
     model.fit(preprocessedData)
 
-    data=
+    future = model.make_future_dataframe(periods=forecastDay)
+    forecast = future[-forecastDay:]
+    forecast = model.predict(future)
+    forecastData=[np.exp(y) for y in forecast['yhat'][-forecastDay:]]
+    data=rawArrayDatas[1]+forecastData
     date = [d.strftime('%Y-%m-%d') for d in forecast['ds']]
+
+    FirebaseDatabaseManager.StoreOutputData(processId, resultArrayData=data, resultArrayDate=date, status=DefineManager.ALGORITHM_STATUS_DONE)
     return
 
 def ProcessResultGetter(processId):#TODO: Request processid:2 -> {"Result": [3, 4], "Status": "Done", "Date": null}
