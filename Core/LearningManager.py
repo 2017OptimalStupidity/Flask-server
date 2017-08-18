@@ -8,12 +8,23 @@ from fbprophet import Prophet
 def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "start of learning #" + str(processId), DefineManager.LOG_LEVEL_INFO)
 
-    testForecast={}
-    rmse={}
-    realForecast={}
+    mockForecastDictionary={}
+    realForecastDictionary={}
 
     trainSize=int(len(rawArrayDatas[0])*0.7)
     testSize=len(rawArrayDatas[0])-trainSize
+
+    testY= rawArrayDatas[1][trainSize:]
+####################################################################################LSTM
+    mockMin = np.min(rawArrayDatas[1][:trainSize])
+    mockMax = np.max(rawArrayDatas[1][:trainSize])
+    mockForecastDictionary['LSTM'] = list(i min + np.random.beta(mockMin, mockMax) * (mockMax - mockMin))
+
+    min = np.min(rawArrayDatas[1])
+    max = np.max(rawArrayDatas[1])
+    realForecastDictionary['LSTM'] = list(min + np.random.beta(min, max, testSize) * (max - min))
+
+####################################################################################BAYSEIAN
 
     mockDs = rawArrayDatas[0][:trainSize]
     mockY = list(np.log(rawArrayDatas[1][:trainSize]))
@@ -32,20 +43,33 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     mockModel = Prophet()
     mockModel.fit(mockPreprocessedData)
     mockFuture = mockModel.make_future_dataframe(periods=testSize)
-    mockForecast= mockModel.predict(mockFuture)
+    mockForecastProphetTable= mockModel.predict(mockFuture)
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "mockforecast success",
                                    DefineManager.LOG_LEVEL_INFO)
-    testForecast['Bayseian'] = [np.exp(y) for y in mockForecast['yhat'][-testSize:]]
+    mockForecastDictionary['Bayseian'] = [np.exp(y) for y in mockForecastProphetTable['yhat'][-testSize:]]
 
     model=Prophet()
     model.fit(preprocessedData)
     future = model.make_future_dataframe(periods=forecastDay)
-    forecast = model.predict(future)
+    forecastProphetTable = model.predict(future)
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "realforecast success",
                                    DefineManager.LOG_LEVEL_INFO)
-    forecastData=[np.exp(y) for y in forecast['yhat'][-forecastDay:]]
-    data=rawArrayDatas[1]+forecastData
-    date = [d.strftime('%Y-%m-%d') for d in forecast['ds']]
+    realForecastDictionary['Bayseian']=[np.exp(y) for y in forecastProphetTable['yhat'][-forecastDay:]]
+
+    date = [d.strftime('%Y-%m-%d') for d in forecastProphetTable['ds']]
+##################################################################################################ALGORITHM COMPARE
+    for yhat, y in mockForecastDictionary['LSTM'], testY:
+        sum = sum + (yhat - y) ** 2
+    minRmse=sum
+
+    for k,v in mockForecastDictionary.items():
+        sum=0
+        for yhat, y in v, testY:
+            sum=sum+(yhat-y)**2
+        if sum<min:
+            nameOfBestAlgorithm=k
+
+    data = rawArrayDatas[1] + realForecastDictionary[nameOfBestAlgorithm]
 
     FirebaseDatabaseManager.StoreOutputData(processId, resultArrayData=data, resultArrayDate=date, status=DefineManager.ALGORITHM_STATUS_DONE)
     return
