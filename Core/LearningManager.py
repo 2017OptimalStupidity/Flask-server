@@ -22,28 +22,28 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
         # [[날짜],[판매량]] 형태 2D list -> pandas.core.frame.DataFrame의 형태의 [년, 월, 요일, 판매량]
         #TODO ds를 요일, 계절로 변환을 PrepareLstm()에서 시행
         #TODO 날씨, 경제 등의 feature 도 pandas DatFrame에 포함(PrepareLstm()에서)
-
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "start", DefineManager.LOG_LEVEL_INFO)
         #전체 data 전처리
     XY=PrepareLstm(rawArrayDatas)
         #train data 추출(0.7)
     X = XY[0][:trainSize]
     Y = XY[1][:trainSize]
     trainXY=[X,Y]
-
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "LSTMpreprocessing succeed", DefineManager.LOG_LEVEL_INFO)
     # 계산
         #trainXY로 testY 예측
     mockForecast['Lstm'] = Lstm(preprocessedData=trainXY, forecastDay=testSize)
         #전체 XY로 realForecast 예측
     realForecast['Lstm'] = Lstm(preprocessedData=XY, forecastDay=forecastDay)
-
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "LSTMpredict succeed", DefineManager.LOG_LEVEL_INFO)
     # 평가
     testRmse=0
     for i in range(testSize):
         testRmse=testRmse + (testY[i] - mockForecast['Lstm'][i]) ** 2
     rmse['Lstm'] = testRmse
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "LSTMevaluation succeed", DefineManager.LOG_LEVEL_INFO)
 
     ################################################################ BAYSEIAN
-
     # 전처리 raw data를 preprocessed data(ds-y)로 변환하는 과정
         #[[날짜],[판매량]] 형태 2D list -> pandas.core.frame.DataFrame의 형태의 [날짜, 판매량]
 
@@ -53,19 +53,19 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     X = XY[0][:trainSize]
     Y = XY[1][:trainSize]
     trainXY=[X,Y]
-
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BAYSEIANpreprocessing succeed", DefineManager.LOG_LEVEL_INFO)
     #계산
         # trainXY로 testY 예측
     mockForecast['Bayseian'] = Bayseian(preprocessedData=trainXY, forecastDay=testSize)[0]
         # 전체 XY로 realForecast 예측
     realForecast['Bayseian'] = Bayseian(preprocessedData=XY, forecastDay=forecastDay)[0]
-
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BAYSEIANpredict succeed", DefineManager.LOG_LEVEL_INFO)
     #평가
     testRmse=0
     for i in range(testSize):
         testRmse=testRmse+ (testY[i] - mockForecast['Bayseian'][i]) ** 2
     rmse['Bayseian'] = testRmse
-
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BAYSEIANevaluation succeed", DefineManager.LOG_LEVEL_INFO)
     ############################################################### 그 외 알고리즘(ex SVM)
 
 
@@ -80,9 +80,11 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
             bestAlgorithmName=i
 
     realForecast=realForecast[bestAlgorithmName]
-
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "Algorithm comparison succeed", DefineManager.LOG_LEVEL_INFO)
     forecastDate= Bayseian(preprocessedData=XY, forecastDay=forecastDay)[1]
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "DateMaking succeed", DefineManager.LOG_LEVEL_INFO)
     FirebaseDatabaseManager.StoreOutputData(processId,forecastDate,realForecast,DefineManager.ALGORITHM_STATUS_DONE )
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "FirebaseUploading succeed", DefineManager.LOG_LEVEL_INFO)
     return
 
 def ProcessResultGetter(processId):#TODO: Request processid:2 -> {"Result": [3, 4], "Status": "Done", "Date": null}
