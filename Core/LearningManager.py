@@ -50,8 +50,8 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
         # 전체 data 전처리
     XY = PrepareBayseian(rawArrayDatas)
         # train data 추출(0.7)
-    X = XY[0][:trainSize]
-    Y = XY[1][:trainSize]
+    X = XY.iloc[:trainSize,0]
+    Y =XY.iloc[:trainSize,1]
     trainXY=[X,Y]
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BAYSEIANpreprocessing succeed", DefineManager.LOG_LEVEL_INFO)
     #계산
