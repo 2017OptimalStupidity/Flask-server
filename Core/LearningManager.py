@@ -32,7 +32,7 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "LSTMpreprocessing succeed", DefineManager.LOG_LEVEL_INFO)
     # 계산
         #trainXY로 testY 예측
-    mockForecast['Lstm'] = Lstm(preprocessedData=trainXY, forecastDay=testSize)
+    # mockForecast['Lstm'] = Lstm(preprocessedData=trainXY, forecastDay=testSize)
         #전체 XY로 realForecast 예측
     realForecast['Lstm'] = Lstm(preprocessedData=XY, forecastDay=forecastDay)
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "LSTMpredict succeed", DefineManager.LOG_LEVEL_INFO)
@@ -50,16 +50,16 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
         # 전체 data 전처리
     XY = PrepareBayseian(rawArrayDatas)
         # train data 추출(0.7)
-    X = XY.iloc[:trainSize,0]
-    Y =XY.iloc[:trainSize,1]
-    trainXY=[X,Y]
+    trainXY=XY.iloc[:trainSize]
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BAYSEIANpreprocessing succeed", DefineManager.LOG_LEVEL_INFO)
     #계산
         # trainXY로 testY 예측
     mockForecast['Bayseian'] = Bayseian(preprocessedData=trainXY, forecastDay=testSize)[0]
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BAYSEIANmockforecast succeed",
+                                   DefineManager.LOG_LEVEL_INFO)
         # 전체 XY로 realForecast 예측
     realForecast['Bayseian'] = Bayseian(preprocessedData=XY, forecastDay=forecastDay)[0]
-    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BAYSEIANpredict succeed", DefineManager.LOG_LEVEL_INFO)
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BAYSEIANrealforecast succeed", DefineManager.LOG_LEVEL_INFO)
     #평가
     testRmse=0
     for i in range(testSize):
@@ -124,7 +124,7 @@ def Lstm(preprocessedData,forecastDay):
 
 def PrepareBayseian(dsY):
     ds = dsY[0]
-    y = dsY[1]
+    y = np.log(dsY[1])
     sales = list(zip(ds, y))
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BAYSEIANpreprocessing dsY to list succeed", DefineManager.LOG_LEVEL_INFO)
     preprocessedData= pd.DataFrame(data = sales, columns=['ds', 'y'])
@@ -134,7 +134,11 @@ def PrepareBayseian(dsY):
 def Bayseian(preprocessedData, forecastDay):
     forecast=[]
     model = Prophet()
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BAYSEIAN forecast modelfit start",
+                                   DefineManager.LOG_LEVEL_INFO)
     model.fit(preprocessedData)
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BAYSEIAN forecast modelfit success",
+                                   DefineManager.LOG_LEVEL_INFO)
     future = model.make_future_dataframe(periods=forecastDay)
     forecast = future[-forecastDay:]
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BAYSEIAN forecast succeed", DefineManager.LOG_LEVEL_INFO)
