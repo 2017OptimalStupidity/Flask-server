@@ -23,13 +23,17 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     ds=rawArrayDatas[0]
     y=list(np.log(rawArrayDatas[1]))
     sales=list(zip(ds, y))
-    mockPreprocessedData = pd.DataFrame(data=mockS  ales, columns=['ds', 'y'])
+    mockPreprocessedData = pd.DataFrame(data=mockSales, columns=['ds', 'y'])
     preprocessedData=pd.DataFrame(data=sales, columns=['ds','y'])
+
+    mockModel = Prophet()
+    mockModel.fit(mockPreprocessedData)
+    mockfuture = mockModel.make_future_dataframe(periods=testSize)
+    mockForecast
+
     model=Prophet()
     model.fit(preprocessedData)
-
     future = model.make_future_dataframe(periods=forecastDay)
-    forecast = future[-forecastDay:]
     forecast = model.predict(future)
     forecastData=[np.exp(y) for y in forecast['yhat'][-forecastDay:]]
     data=rawArrayDatas[1]+forecastData
