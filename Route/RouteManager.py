@@ -27,5 +27,9 @@ def SendMail():
     name = request.form['name']
     email = request.form['email']
     message = request.form['message']
-    HomePage.MailContect(name, email, message)
-    return "<script>alert('ok');location.href='/';</script>"
+    emailStatus = HomePage.MailContect(name, email, message)
+
+    if emailStatus == DefineManager.AVAILABLE:
+        return "<script>alert('ok');location.href='/';</script>"
+    else:
+        return "<script>alert('fail');location.href='/';</script>"
