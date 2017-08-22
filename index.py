@@ -1,5 +1,4 @@
 from flask import Flask
-from Settings import DefineManager
 from Route import *
 import imp
 import sys
