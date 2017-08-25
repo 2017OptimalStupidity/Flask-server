@@ -18,7 +18,7 @@ def MailContect(name = "Anonymous", email = "Anonymous@anonymous.com", message =
         return DefineManager.NOT_AVAILABLE
 
     try:
-        emailReceiveManager = "*******@gmail.com"
+        emailReceiveManager = "i2maxml@gmail.com"
 
         fromEmailAddr = email
         toEmailAddr = emailReceiveManager
@@ -33,7 +33,7 @@ def MailContect(name = "Anonymous", email = "Anonymous@anonymous.com", message =
         server.ehlo()
         server.starttls()
         server.ehlo()
-        server.login(emailReceiveManager, "********")
+        server.login(emailReceiveManager, "i2max369369")
         text = msg.as_string()
 
         server.sendmail(fromEmailAddr, toEmailAddr, text)
