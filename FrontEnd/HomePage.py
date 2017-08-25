@@ -7,7 +7,7 @@ import smtplib
 
 def RenderIndexPage():
     LoggingManager.PrintLogMessage("FrontEnd", "RenderIndexPage", "Print index page", DefineManager.LOG_LEVEL_INFO)
-    return render_template('index.html')
+    return render_template('index.html', title = "i2max learning project")
 
 def MailContect(name = "Anonymous", email = "Anonymous@anonymous.com", message = "No message data"):
     LoggingManager.PrintLogMessage("FrontEnd", "MailContect", "Sending email name: " + name + " email: " + email + " msg: " + message, DefineManager.LOG_LEVEL_INFO)

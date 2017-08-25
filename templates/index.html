@@ -6,7 +6,7 @@
 -->
 <html>
 	<head>
-		<title>Projection by TEMPLATED</title>
+		<title>{{ title }}</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/main.css') }}" />
@@ -16,12 +16,12 @@
 		<!-- Header -->
 			<header id="header">
 				<div class="inner">
-					<a href={{ url_for('routes.IndexPage') }} class="logo"><strong>Projection</strong> by TEMPLATED</a>
-					<nav id="nav">
-						<a href={{ url_for('routes.IndexPage') }}>Home</a>
+					<a href={{ url_for('routes.IndexPage') }} class="logo"><strong>Edited</strong> by stories2</a>
+{#					<nav id="nav">#}
+{#						<a href={{ url_for('routes.IndexPage') }}>Home</a>#}
 {#						<a href="generic.html">Generic</a>#}
 {#						<a href="elements.html">Elements</a>#}
-					</nav>
+{#					</nav>#}
 					<a href="#navPanel" class="navPanelToggle"><span class="fa fa-bars"></span></a>
 				</div>
 			</header>
@@ -30,34 +30,37 @@
 			<section id="banner">
 				<div class="inner">
 					<header>
-						<h1>Welcome to Projection</h1>
+						<h1>{{ title }}</h1>
 					</header>
 
 					<div class="flex ">
 
 						<div>
-							<span class="icon fa-car"></span>
-							<h3>Aliquam</h3>
-							<p>Suspendisse amet ullamco</p>
+{#							<span class="icon fa-car"></span>#}
+                            <img src="{{ url_for('static', filename='images/ic_cloud_black_24dp_1x.png') }}" class="icon fa-car">
+							<h3>Cloud</h3>
+							<p>Service runinng server.</p>
 						</div>
 
 						<div>
-							<span class="icon fa-camera"></span>
-							<h3>Elementum</h3>
-							<p>Class aptent taciti ad litora</p>
+{#							<span class="icon fa-camera"></span>#}
+                            <img src="{{ url_for('static', filename='images/ic_computer_black_24dp_1x.png') }}" class="icon fa-camera">
+							<h3>Machine learning</h3>
+							<p>Make forecast data.</p>
 						</div>
 
 						<div>
-							<span class="icon fa-bug"></span>
-							<h3>Ultrices</h3>
-							<p>Nulla vitae mauris non felis</p>
+{#							<span class="icon fa-bug"></span>#}
+                            <img src="{{ url_for('static', filename='images/ic_apps_black_24dp_1x.png') }}" class="icon fa-bug">
+							<h3>App</h3>
+							<p>Communicate with customer.</p>
 						</div>
 
 					</div>
 
-					<footer>
-						<a href="#" class="button">Get Started</a>
-					</footer>
+{#					<footer>#}
+{#						<a href="#" class="button">Get Started</a>#}
+{#					</footer>#}
 				</div>
 			</section>
 
