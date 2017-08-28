@@ -21,3 +21,15 @@ def ForecastDatas():
     content = request.get_json(silent=True)
     LoggingManager.PrintLogMessage("RouteManager", "ForecastDatas", "json data: " + str(content), DefineManager.LOG_LEVEL_INFO)
     return BackgroundProcessManager.ForecastDatas(content['ProcessId'])
+
+@routes.route("/mail/", methods=['POST'])
+def SendMail():
+    name = request.form['name']
+    email = request.form['email']
+    message = request.form['message']
+    emailStatus = HomePage.MailContect(name, email, message)
+
+    if emailStatus == DefineManager.AVAILABLE:
+        return "<script>alert('ok');location.href='/';</script>"
+    else:
+        return "<script>alert('fail');location.href='/';</script>"
