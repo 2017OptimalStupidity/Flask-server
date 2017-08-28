@@ -39,6 +39,7 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "realdata create success",
                                    DefineManager.LOG_LEVEL_INFO)
 
+
     mockModel = Prophet()
     mockModel.fit(mockPreprocessedData)
     mockFuture = mockModel.make_future_dataframe(periods=testSize)
@@ -90,4 +91,4 @@ def rmse(a,b):
     sum=0
     for i in range(len(a)):
         sum=sum+(a[i]-b[i])**2
-    return np.sqrt(sum)
+    return np.sqrt(sum/len(a))
