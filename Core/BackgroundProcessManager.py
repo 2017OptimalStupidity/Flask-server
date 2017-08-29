@@ -2,7 +2,7 @@ import json
 import threading
 from Utils import LoggingManager
 from Settings import DefineManager
-from . import LearningManager, FirebaseDatabaseManager
+from . import LearningManager, FirebaseDatabaseManager, lastProcessIdNumber
 
 def UploadRawDatas(rawDataArray, rawDateArray, day):
     LoggingManager.PrintLogMessage("BackgroundProcessManager", "UploadRawDatas", "data: " + str(rawDataArray) + ", date: " + str(rawDateArray) + ", day " + str(day), DefineManager.LOG_LEVEL_INFO)
