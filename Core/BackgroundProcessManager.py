@@ -4,8 +4,6 @@ from Utils import LoggingManager
 from Settings import DefineManager
 from . import LearningManager, FirebaseDatabaseManager
 
-FirebaseDatabaseManager.GetFirebaseConnection(DefineManager.FIREBASE_DOMAIN)
-
 def UploadRawDatas(rawDataArray, rawDateArray, day):
     LoggingManager.PrintLogMessage("BackgroundProcessManager", "UploadRawDatas", "data: " + str(rawDataArray) + ", date: " + str(rawDateArray) + ", day " + str(day), DefineManager.LOG_LEVEL_INFO)
 
@@ -29,7 +27,9 @@ def ForecastDatas(processId):
 
 
 def AddNewTrain(rawDataArray, rawDateArray, day):
-    nowDictSize = FirebaseDatabaseManager.GetLastProcessId() + 1
+    global lastProcessIdNumber
+    lastProcessIdNumber = lastProcessIdNumber + 1
+    nowDictSize = lastProcessIdNumber
     FirebaseDatabaseManager.CreateNewProcessTable(nowDictSize)
     FirebaseDatabaseManager.StoreInputData(nowDictSize, rawDataArray, rawDateArray, day)
     FirebaseDatabaseManager.UpdateLastProcessId(nowDictSize)
