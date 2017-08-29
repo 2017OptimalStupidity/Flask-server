@@ -32,7 +32,7 @@ def AddNewTrain(rawDataArray, rawDateArray, day):
     nowDictSize = lastProcessIdNumber
     FirebaseDatabaseManager.CreateNewProcessTable(nowDictSize)
     FirebaseDatabaseManager.StoreInputData(nowDictSize, rawDataArray, rawDateArray, day)
-    FirebaseDatabaseManager.UpdateLastProcessId(nowDictSize)
+    FirebaseDatabaseManager.UpdateLastProcessId(lastProcessIdNumber)
 
     rawDataAndDateArray = [rawDateArray, rawDataArray]
     threadOfLearn = threading.Thread(target=LearningManager.LearningModuleRunner, args=(rawDataAndDateArray, nowDictSize, day))
