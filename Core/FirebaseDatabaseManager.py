@@ -67,7 +67,7 @@ def CreateNewProcessTable(processId = 0):
 
     if IsConnectionAlive():
         try:
-            postResult = firebaseDatabase.patch('/', {str(processId): {'inputData': {'data': [], 'date': [], 'day': 0}, 'outputData': {'data': [], 'date': [], 'status': DefineManager.ALGORITHM_STATUS_WORKING}}})
+            postResult = firebaseDatabase.patch('/ml/', {str(processId): {'inputData': {'data': [], 'date': [], 'day': 0}, 'outputData': {'data': [], 'date': [], 'status': DefineManager.ALGORITHM_STATUS_WORKING}}})
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "CreateNewProcessTable", "creating new table", DefineManager.LOG_LEVEL_INFO)
             return True
         except:
@@ -81,7 +81,7 @@ def StoreInputData(processId = 0, rawArrayData = [], rawArrayDate = [], day = 0)
 
     if IsConnectionAlive():
         try:
-            postResult = firebaseDatabase.patch('/' + str(processId) + '/inputData', {'data': rawArrayData, 'date': rawArrayDate, 'day': day})
+            postResult = firebaseDatabase.patch('/ml/' + str(processId) + '/inputData', {'data': rawArrayData, 'date': rawArrayDate, 'day': day})
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreInputData", "saved data", DefineManager.LOG_LEVEL_INFO)
             return True
         except:
@@ -95,7 +95,7 @@ def StoreOutputData(processId = 0, resultArrayData = [], resultArrayDate = [], s
 
     if IsConnectionAlive():
         try:
-            postResult = firebaseDatabase.patch('/' + str(processId) + '/outputData', {'data': resultArrayData, 'date': resultArrayDate, 'status': status})
+            postResult = firebaseDatabase.patch('/ml/' + str(processId) + '/outputData', {'data': resultArrayData, 'date': resultArrayDate, 'status': status})
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreOutputData", "saved data", DefineManager.LOG_LEVEL_INFO)
             return True
         except:
@@ -109,7 +109,7 @@ def GetOutputDataStatus(processId = 0):
 
     if IsConnectionAlive():
         try:
-            outputStatus = firebaseDatabase.get('/' + str(processId) + '/outputData/status', None)
+            outputStatus = firebaseDatabase.get('/ml/' + str(processId) + '/outputData/status', None)
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "data status loaded: " + str(outputStatus), DefineManager.LOG_LEVEL_INFO)
             return outputStatus
         except:
@@ -123,7 +123,7 @@ def GetOutputDataArray(processId = 0):
 
     if IsConnectionAlive():
         try:
-            outputArray = firebaseDatabase.get('/' + str(processId) + '/outputData/data', None)
+            outputArray = firebaseDatabase.get('/ml/' + str(processId) + '/outputData/data', None)
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "data loaded", DefineManager.LOG_LEVEL_INFO)
 
             if outputArray == None:
@@ -140,7 +140,7 @@ def GetOutputDateArray(processId = 0):
 
     if IsConnectionAlive():
         try:
-            outputArray = firebaseDatabase.get('/' + str(processId) + '/outputData/date', None)
+            outputArray = firebaseDatabase.get('/ml/' + str(processId) + '/outputData/date', None)
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "data loaded", DefineManager.LOG_LEVEL_INFO)
 
             if outputArray == None:
