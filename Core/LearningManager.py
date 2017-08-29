@@ -36,10 +36,15 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     ds = rawArrayDatas[0]
     y = list(rawArrayDatas[1])
     sales = list(zip(ds, y))
-
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "testdata create success",
+                                   DefineManager.LOG_LEVEL_INFO)
     mockForecastDictionary['LSTM']= LSTM(mockDs, mockY, testSize)
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "mockForecast success",
+                                   DefineManager.LOG_LEVEL_INFO)
+    tf.reset_default_graph()
     realForecastDictionary['LSTM'] = LSTM(ds,y, forecastDay)
-
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "realForecast success",
+                                   DefineManager.LOG_LEVEL_INFO)
 
 
 
@@ -134,7 +139,8 @@ def minMaxDeNormalizer(data, originalData):
     return (data+shift)*multiplier
 
 
-def LSTM(sales, forecastDay):
+def LSTM(ds, y, forecastDay):
+    sales = list(zip(ds, y))
     txs = pd.DataFrame(data=sales, columns=['date', 'sales'])
     year = lambda x: datetime.strptime(x, "%Y-%m-%d").year
     day_of_week = lambda x: datetime.strptime(x, "%Y-%m-%d").weekday()
@@ -168,8 +174,7 @@ def LSTM(sales, forecastDay):
     seq_length = 5
 
     # output_dim(=forecastDays)만큼의 다음날 y_data를 예측
-    forecastDays = 7
-    output_dim = forecastDays
+    output_dim = forecastDay
 
     # hidden_dim은 정말 임의로 설정
     hidden_dim = 10
@@ -186,10 +191,10 @@ def LSTM(sales, forecastDay):
     # build a series dataset(seq_length에 해당하는 전날 X와 다음 forecastDays에 해당하는 Y)
     dataX = []
     dataY = []
-    for i in range(0, len(y) - seq_length - forecastDays):
+    for i in range(0, len(y) - seq_length - forecastDay):
         _x = x[i:i + seq_length]
-        _y = y[i + seq_length:i + seq_length + forecastDays]
-        _y = np.reshape(_y, (forecastDays))
+        _y = y[i + seq_length:i + seq_length + forecastDay]
+        _y = np.reshape(_y, (forecastDay))
         #     _y=Y[i+seq_length:i+seq_length+forecastDays]
         print(_x, "->", _y)
         dataX.append(_x)
@@ -201,7 +206,7 @@ def LSTM(sales, forecastDay):
     trainY, testY = np.array(dataY[0:train_size]), np.array(dataY[train_size:])
 
     X = tf.placeholder(tf.float32, [None, seq_length, data_dim])
-    Y = tf.placeholder(tf.float32, [None, forecastDays])
+    Y = tf.placeholder(tf.float32, [None, forecastDay])
 
     cell = tf.contrib.rnn.BasicLSTMCell(num_units=hidden_dim, state_is_tuple=True, activation=tf.nn.relu)
 
@@ -217,7 +222,8 @@ def LSTM(sales, forecastDay):
 
     targets = tf.placeholder(tf.float32, [None, 1])
     predictions = tf.placeholder(tf.float32, [None, 1])
-    rmse = tf.sqrt(tf.reduce_mean(tf.square(targets - predictions)))
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "train prepare success",
+                                   DefineManager.LOG_LEVEL_INFO)
     with tf.Session() as sess:
         # 초기화
         init = tf.global_variables_initializer()
@@ -230,7 +236,8 @@ def LSTM(sales, forecastDay):
 
         # Test step
         test_predict = minMaxDeNormalizer(sess.run(Y_pred, feed_dict={X: testX}), originalXY)
-
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "train  success",
+                                   DefineManager.LOG_LEVEL_INFO)
     return list(test_predict[-1])
 
 
