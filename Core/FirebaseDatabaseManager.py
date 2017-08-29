@@ -68,7 +68,7 @@ def CreateNewProcessTable(processId = 0):
     if IsConnectionAlive():
         try:
             postResult = firebaseDatabase.patch('/ml/', {str(processId): {'inputData': {'data': [], 'date': [], 'day': 0}, 'outputData': {'data': [], 'date': [], 'status': DefineManager.ALGORITHM_STATUS_WORKING}}})
-            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "CreateNewProcessTable", "creating new table", DefineManager.LOG_LEVEL_INFO)
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "CreateNewProcessTable", "creating new table id: " + str(processId), DefineManager.LOG_LEVEL_INFO)
             return True
         except:
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "CreateNewProcessTable", "there is problem to create table", DefineManager.LOG_LEVEL_ERROR)
@@ -82,7 +82,7 @@ def StoreInputData(processId = 0, rawArrayData = [], rawArrayDate = [], day = 0)
     if IsConnectionAlive():
         try:
             postResult = firebaseDatabase.patch('/ml/' + str(processId) + '/inputData', {'data': rawArrayData, 'date': rawArrayDate, 'day': day})
-            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreInputData", "saved data", DefineManager.LOG_LEVEL_INFO)
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreInputData", "saved data id: " + str(processId), DefineManager.LOG_LEVEL_INFO)
             return True
         except:
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreInputData", "there is problem to store input data", DefineManager.LOG_LEVEL_ERROR)
@@ -96,7 +96,7 @@ def StoreOutputData(processId = 0, resultArrayData = [], resultArrayDate = [], s
     if IsConnectionAlive():
         try:
             postResult = firebaseDatabase.patch('/ml/' + str(processId) + '/outputData', {'data': resultArrayData, 'date': resultArrayDate, 'status': status})
-            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreOutputData", "saved data", DefineManager.LOG_LEVEL_INFO)
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreOutputData", "saved data id: " + str(processId), DefineManager.LOG_LEVEL_INFO)
             return True
         except:
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "StoreOutputData", "there is problem to store output data", DefineManager.LOG_LEVEL_ERROR)
@@ -110,7 +110,7 @@ def GetOutputDataStatus(processId = 0):
     if IsConnectionAlive():
         try:
             outputStatus = firebaseDatabase.get('/ml/' + str(processId) + '/outputData/status', None)
-            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "data status loaded: " + str(outputStatus), DefineManager.LOG_LEVEL_INFO)
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "data status loaded: " + str(outputStatus) + " id: " + str(processId), DefineManager.LOG_LEVEL_INFO)
             return outputStatus
         except:
             LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "there is problem to load status", DefineManager.LOG_LEVEL_ERROR)
@@ -124,7 +124,7 @@ def GetOutputDataArray(processId = 0):
     if IsConnectionAlive():
         try:
             outputArray = firebaseDatabase.get('/ml/' + str(processId) + '/outputData/data', None)
-            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "data loaded", DefineManager.LOG_LEVEL_INFO)
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "data loaded id: " + str(processId), DefineManager.LOG_LEVEL_INFO)
 
             if outputArray == None:
                 return []
@@ -141,7 +141,7 @@ def GetOutputDateArray(processId = 0):
     if IsConnectionAlive():
         try:
             outputArray = firebaseDatabase.get('/ml/' + str(processId) + '/outputData/date', None)
-            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "data loaded", DefineManager.LOG_LEVEL_INFO)
+            LoggingManager.PrintLogMessage("FirebaseDatabaseManager", "GetOutputDataStatus", "data loaded id: " + str(processId), DefineManager.LOG_LEVEL_INFO)
 
             if outputArray == None:
                 return []
