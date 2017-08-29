@@ -25,16 +25,24 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     testY= rawArrayDatas[1][trainSize:]
 
 ####################################################################################LSTM
+    salesForLstm = rawArrayDatas[1]
+    dataMean=np.mean(salesForLstm)
+    dataSd=np.std(salesForLstm)
 
-    testY= rawArrayDatas[1][trainSize:]
+    for i in range(len(salesForLstm)):
+        if salesForLstm[i]>dataMean+3*dataSd:
+            salesForLstm[i]=dataMean+3*dataSd
+        if salesForLstm[i]<dataMean-3*dataSd:
+            salesForLstm[i] = dataMean + 3 * dataSd
+    testY= salesForLstm[trainSize:]
     mockDs = rawArrayDatas[0][:trainSize]
-    mockY = list((rawArrayDatas[1][:trainSize]))
+    mockY = list((salesForLstm[:trainSize]))
     mockSales = list(zip(mockDs, mockY))
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "traindata create success",
                                    DefineManager.LOG_LEVEL_INFO)
 
     ds = rawArrayDatas[0]
-    y = list(rawArrayDatas[1])
+    y = list(salesForLstm)
     sales = list(zip(ds, y))
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "testdata create success",
                                    DefineManager.LOG_LEVEL_INFO)
@@ -195,8 +203,7 @@ def LSTM(ds, y, forecastDay):
         _x = x[i:i + seq_length]
         _y = y[i + seq_length:i + seq_length + forecastDay]
         _y = np.reshape(_y, (forecastDay))
-        #     _y=Y[i+seq_length:i+seq_length+forecastDays]
-        print(_x, "->", _y)
+
         dataX.append(_x)
         dataY.append(_y)
 
