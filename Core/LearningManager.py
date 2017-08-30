@@ -26,14 +26,13 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
 
 ####################################################################################LSTM
     salesForLstm = rawArrayDatas[1]
-    dataMean=np.mean(salesForLstm)
-    dataSd=np.std(salesForLstm)
-
-    for i in range(len(salesForLstm)):
-        if salesForLstm[i]>dataMean+3*dataSd:
-            salesForLstm[i]=dataMean+3*dataSd
-        if salesForLstm[i]<dataMean-3*dataSd:
-            salesForLstm[i] = dataMean + 3 * dataSd
+    # dataMean=np.mean(salesForLstm)
+    # dataSd=np.std(salesForLstm)
+    # for i in range(len(salesForLstm)):
+    #     if salesForLstm[i]>dataMean+3*dataSd:
+    #         salesForLstm[i]=dataMean+3*dataSd
+    #     if salesForLstm[i]<dataMean-3*dataSd:
+    #         salesForLstm[i] = dataMean + 3 * dataSd
     testY= salesForLstm[trainSize:]
     mockDs = rawArrayDatas[0][:trainSize]
     mockY = list((salesForLstm[:trainSize]))
@@ -83,17 +82,17 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "realdata create success",
                                    DefineManager.LOG_LEVEL_INFO)
 
-    mockModel = Prophet()
+    mockModel = Prophet(yearly_seasonality=True)
     mockModel.fit(mockPreprocessedData)
-    mockFuture = mockModel.make_future_dataframe(periods=testSize)
+    mockFuture = mockModel.make_future_dataframe(periods=testSize, freq='W')
     mockForecastProphetTable = mockModel.predict(mockFuture)
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "mockforecast success",
                                    DefineManager.LOG_LEVEL_INFO)
     mockForecastDictionary['Bayseian'] = [np.exp(y) for y in mockForecastProphetTable['yhat'][-testSize:]]
 
-    model = Prophet()
+    model = Prophet(yearly_seasonality=True)
     model.fit(preprocessedData)
-    future = model.make_future_dataframe(periods=forecastDay)
+    future = model.make_future_dataframe(periods=forecastDay,freq='W')
     forecastProphetTable = model.predict(future)
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "realforecast success",
                                    DefineManager.LOG_LEVEL_INFO)
