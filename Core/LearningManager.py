@@ -84,7 +84,7 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
 
     mockModel = Prophet(yearly_seasonality=True)
     mockModel.fit(mockPreprocessedData)
-    mockFuture = mockModel.make_future_dataframe(periods=testSize, freq='W')
+    mockFuture = mockModel.make_future_dataframe(periods=testSize)
     mockForecastProphetTable = mockModel.predict(mockFuture)
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "mockforecast success",
                                    DefineManager.LOG_LEVEL_INFO)
@@ -92,7 +92,7 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
 
     model = Prophet(yearly_seasonality=True)
     model.fit(preprocessedData)
-    future = model.make_future_dataframe(periods=forecastDay,freq='W')
+    future = model.make_future_dataframe(periods=forecastDay)
     forecastProphetTable = model.predict(future)
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "realforecast success",
                                    DefineManager.LOG_LEVEL_INFO)
@@ -239,10 +239,11 @@ def LSTM(ds, y, forecastDay):
         for i in range(iterations):
             _, step_loss = sess.run([train, loss], feed_dict={X: trainX, Y: trainY})
             # print("[step: {}] loss: {}".format(i, step_loss))
-
+        LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "test success",
+                                       DefineManager.LOG_LEVEL_INFO)
         # Test step
         test_predict = minMaxDeNormalizer(sess.run(Y_pred, feed_dict={X: testX}), originalXY)
-    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "train  success",
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "test success",
                                    DefineManager.LOG_LEVEL_INFO)
     return list(test_predict[-1])
 
