@@ -21,54 +21,32 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     global realForecastDictionary
     trainSize=int(len(rawArrayDatas[0])*0.7)
     testSize=len(rawArrayDatas[0])-trainSize
-
     testY= rawArrayDatas[1][trainSize:]
+
     dayOrWeekOrMonth='week' # 'day', 'week', 'month'
     if dayOrWeekOrMonth=='day':
+        ####LSTM
+
+        ####Bay,
 
 
-        nameOfBestAlgorithm= AlgorithmCompareAndUpload(testY)
+        ###########date 받아오기, mockForecast 에 저장
+        nameOfBestAlgorithm= AlgorithmCompare(testY)
+
+        ####더 좋은 알고리즘 호출
+
+        ###########realForecast에 저장
         data = rawArrayDatas[1] + realForecastDictionary[nameOfBestAlgorithm]
 
         FirebaseDatabaseManager.StoreOutputData(processId, resultArrayData=data, resultArrayDate=date,
                                                 status=DefineManager.ALGORITHM_STATUS_DONE)
     elif dayOrWeekOrMonth=='week':
-        nameOfBestAlgorithm= AlgorithmCompareAndUpload(testY)
+        nameOfBestAlgorithm= AlgorithmCompare(testY)
         data = rawArrayDatas[1] + realForecastDictionary[nameOfBestAlgorithm]
 
         FirebaseDatabaseManager.StoreOutputData(processId, resultArrayData=data, resultArrayDate=date,
                                                 status=DefineManager.ALGORITHM_STATUS_DONE)
 ####################################################################################LSTM
-    salesForLstm = rawArrayDatas[1]
-
-    #이상점 제거 모듈
-    # dataMean=np.mean(salesForLstm)
-    # dataSd=np.std(salesForLstm)
-    # for i in range(len(salesForLstm)):
-    #     if salesForLstm[i]>dataMean+3*dataSd:
-    #         salesForLstm[i]=dataMean+3*dataSd
-    #     if salesForLstm[i]<dataMean-3*dataSd:
-    #         salesForLstm[i] = dataMean + 3 * dataSd
-    testY= salesForLstm[trainSize:]
-    mockDs = rawArrayDatas[0][:trainSize]
-    mockY = list((salesForLstm[:trainSize]))
-    mockSales = list(zip(mockDs, mockY))
-    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "traindata create success",
-                                   DefineManager.LOG_LEVEL_INFO)
-
-    ds = rawArrayDatas[0]
-    y = list(salesForLstm)
-    sales = list(zip(ds, y))
-    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "testdata create success",
-                                   DefineManager.LOG_LEVEL_INFO)
-    mockForecastDictionary['LSTM']= LSTM(mockDs, mockY, testSize)
-    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "mockForecast success",
-                                   DefineManager.LOG_LEVEL_INFO)
-    tf.reset_default_graph()
-    realForecastDictionary['LSTM'] = LSTM(ds,y, forecastDay)
-    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "realForecast success",
-                                   DefineManager.LOG_LEVEL_INFO)
-
 
 
     # mockMinData = np.min(rawArrayDatas[1][:trainSize])
@@ -129,52 +107,38 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     FirebaseDatabaseManager.StoreOutputData(processId, resultArrayData=data, resultArrayDate= date, status=DefineManager.ALGORITHM_STATUS_DONE)
     return
 
-def AlgorithmCompareAndUpload(testY):
-    global mockForecastDictionary
-    global realForecastDictionary
-    nameOfBestAlgorithm = 'LSTM'
-    minData = rmse(testY, mockForecastDictionary[nameOfBestAlgorithm])
-    rms = 0
-    for algorithm in realForecastDictionary.keys():
-        rms = rmse(testY, mockForecastDictionary[algorithm])
-        if rms < minData:
-            nameOfBestAlgorithm = algorithm
+def LSTM(rawArrayDatas, forecastDay):
+    salesForLstm = rawArrayDatas[1]
 
-    return nameOfBestAlgorithm
-def ProcessResultGetter(processId):
+    # 이상점 제거 모듈
+    # dataMean=np.mean(salesForLstm)
+    # dataSd=np.std(salesForLstm)
+    # for i in range(len(salesForLstm)):
+    #     if salesForLstm[i]>dataMean+3*dataSd:
+    #         salesForLstm[i]=dataMean+3*dataSd
+    #     if salesForLstm[i]<dataMean-3*dataSd:
+    #         salesForLstm[i] = dataMean + 3 * dataSd
+    testY = salesForLstm[trainSize:]
+    mockDs = rawArrayDatas[0][:trainSize]
+    mockY = list((salesForLstm[:trainSize]))
+    mockSales = list(zip(mockDs, mockY))
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "traindata create success",
+                                   DefineManager.LOG_LEVEL_INFO)
 
-    status=FirebaseDatabaseManager.GetOutputDataStatus(processId)
-
-    if(status==DefineManager.ALGORITHM_STATUS_DONE):
-        date= FirebaseDatabaseManager.GetOutputDateArray(processId)
-        data= FirebaseDatabaseManager.GetOutputDataArray(processId)
-        return [date, data], DefineManager.ALGORITHM_STATUS_DONE
-    elif(status==DefineManager.ALGORITHM_STATUS_WORKING):
-        return [[], DefineManager.ALGORITHM_STATUS_WORKING]
-    else:
-        LoggingManager.PrintLogMessage("LearningManager", "ProcessResultGetter",
-                                       "process not available #" + str(processId), DefineManager.LOG_LEVEL_ERROR)
-        return [[], DefineManager.ALGORITHM_STATUS_WORKING]
-
-
-def rmse(a,b):
-    sum=0
-    for i in range(len(a)):
-        sum=sum+(a[i]-b[i])**2
-    return np.sqrt(sum/len(a))
-
-def minMaxNormalizer(data):
-    numerator=data-np.min(data)
-    denominator=np.max(data)-np.min(data)
-    return numerator/(denominator+1e-7)
-
-def minMaxDeNormalizer(data, originalData):
-    shift=np.min(originalData)
-    multiplier=np.max(originalData)-np.min(originalData)
-    return (data+shift)*multiplier
+    ds = rawArrayDatas[0]
+    y = list(salesForLstm)
+    sales = list(zip(ds, y))
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "testdata create success",
+                                   DefineManager.LOG_LEVEL_INFO)
+    mockForecastDictionary['LSTM'] = LSTM(mockDs, mockY, testSize)
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "mockForecast success",
+                                   DefineManager.LOG_LEVEL_INFO)
+    tf.reset_default_graph()
+    realForecastDictionary['LSTM'] = LSTM(ds, y, forecastDay)
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "realForecast success",
+                                   DefineManager.LOG_LEVEL_INFO)
 
 
-def LSTM(ds, y, forecastDay):
     sales = list(zip(ds, y))
     txs = pd.DataFrame(data=sales, columns=['date', 'sales'])
     year = lambda x: datetime.strptime(x, "%Y-%m-%d").year
@@ -276,7 +240,7 @@ def LSTM(ds, y, forecastDay):
     return list(test_predict[-1])
 
 
-def Bayseian(rawArrayDatas, processId, forecastDay):
+def BayseianDay(rawArrayDatas, processId, forecastDay):
     global mockForecastDictionary
     global realForecastDictionary
 
@@ -317,3 +281,91 @@ def Bayseian(rawArrayDatas, processId, forecastDay):
     date = [d.strftime('%Y-%m-%d') for d in forecastProphetTable['ds']]
 
     return date
+
+def BayseianWeek(rawArrayDatas, processId, forecastDay):
+    global mockForecastDictionary
+    global realForecastDictionary
+
+    trainSize = int(len(rawArrayDatas[0]) * 0.7)
+    testSize = len(rawArrayDatas[0]) - trainSize
+
+    testY = rawArrayDatas[1][trainSize:]
+    mockDs = rawArrayDatas[0][:trainSize]
+    mockY = list(np.log(rawArrayDatas[1][:trainSize]))
+    mockSales = list(zip(mockDs, mockY))
+    mockPreprocessedData = pd.DataFrame(data=mockSales, columns=['ds', 'y'])
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "traindata create success",
+                                   DefineManager.LOG_LEVEL_INFO)
+
+    ds = rawArrayDatas[0]
+    y = list(np.log(rawArrayDatas[1]))
+    sales = list(zip(ds, y))
+    preprocessedData = pd.DataFrame(data=sales, columns=['ds', 'y'])
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "realdata create success",
+                                   DefineManager.LOG_LEVEL_INFO)
+
+    mockModel = Prophet()
+    mockModel.fit(mockPreprocessedData)
+    mockFuture = mockModel.make_future_dataframe(periods=testSize)
+    mockForecastProphetTable = mockModel.predict(mockFuture)
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "mockforecast success",
+                                   DefineManager.LOG_LEVEL_INFO)
+    mockForecastDictionary['Bayseian'] = [np.exp(y) for y in mockForecastProphetTable['yhat'][-testSize:]]
+
+    model = Prophet()
+    model.fit(preprocessedData)
+    future = model.make_future_dataframe(periods=forecastDay)
+    forecastProphetTable = model.predict(future)
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "realforecast success",
+                                   DefineManager.LOG_LEVEL_INFO)
+    realForecastDictionary['Bayseian'] = [np.exp(y) for y in forecastProphetTable['yhat'][-forecastDay:]]
+
+    date = [d.strftime('%Y-%m-%d') for d in forecastProphetTable['ds']]
+
+    return date
+
+
+def rmse(a,b):
+    sum=0
+    for i in range(len(a)):
+        sum=sum+(a[i]-b[i])**2
+    return np.sqrt(sum/len(a))
+
+def minMaxNormalizer(data):
+    numerator=data-np.min(data)
+    denominator=np.max(data)-np.min(data)
+    return numerator/(denominator+1e-7)
+
+def minMaxDeNormalizer(data, originalData):
+    shift=np.min(originalData)
+    multiplier=np.max(originalData)-np.min(originalData)
+    return (data+shift)*multiplier
+
+def AlgorithmCompare(testY):
+    global mockForecastDictionary
+    global realForecastDictionary
+    nameOfBestAlgorithm = 'LSTM'
+    minData = rmse(testY, mockForecastDictionary[nameOfBestAlgorithm])
+    rms = 0
+    for algorithm in realForecastDictionary.keys():
+        rms = rmse(testY, mockForecastDictionary[algorithm])
+        if rms < minData:
+            nameOfBestAlgorithm = algorithm
+
+    return nameOfBestAlgorithm
+
+
+def ProcessResultGetter(processId):
+
+    status=FirebaseDatabaseManager.GetOutputDataStatus(processId)
+
+    if(status==DefineManager.ALGORITHM_STATUS_DONE):
+        date= FirebaseDatabaseManager.GetOutputDateArray(processId)
+        data= FirebaseDatabaseManager.GetOutputDataArray(processId)
+        return [date, data], DefineManager.ALGORITHM_STATUS_DONE
+    elif(status==DefineManager.ALGORITHM_STATUS_WORKING):
+        return [[], DefineManager.ALGORITHM_STATUS_WORKING]
+    else:
+        LoggingManager.PrintLogMessage("LearningManager", "ProcessResultGetter",
+                                       "process not available #" + str(processId), DefineManager.LOG_LEVEL_ERROR)
+        return [[], DefineManager.ALGORITHM_STATUS_WORKING]
