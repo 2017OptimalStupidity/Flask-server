@@ -23,9 +23,25 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     testSize=len(rawArrayDatas[0])-trainSize
 
     testY= rawArrayDatas[1][trainSize:]
+    dayOrWeekOrMonth='week' # 'day', 'week', 'month'
+    if dayOrWeekOrMonth=='day':
 
+
+        nameOfBestAlgorithm= AlgorithmCompareAndUpload(testY)
+        data = rawArrayDatas[1] + realForecastDictionary[nameOfBestAlgorithm]
+
+        FirebaseDatabaseManager.StoreOutputData(processId, resultArrayData=data, resultArrayDate=date,
+                                                status=DefineManager.ALGORITHM_STATUS_DONE)
+    elif dayOrWeekOrMonth=='week':
+        nameOfBestAlgorithm= AlgorithmCompareAndUpload(testY)
+        data = rawArrayDatas[1] + realForecastDictionary[nameOfBestAlgorithm]
+
+        FirebaseDatabaseManager.StoreOutputData(processId, resultArrayData=data, resultArrayDate=date,
+                                                status=DefineManager.ALGORITHM_STATUS_DONE)
 ####################################################################################LSTM
     salesForLstm = rawArrayDatas[1]
+
+    #이상점 제거 모듈
     # dataMean=np.mean(salesForLstm)
     # dataSd=np.std(salesForLstm)
     # for i in range(len(salesForLstm)):
@@ -113,6 +129,18 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     FirebaseDatabaseManager.StoreOutputData(processId, resultArrayData=data, resultArrayDate= date, status=DefineManager.ALGORITHM_STATUS_DONE)
     return
 
+def AlgorithmCompareAndUpload(testY):
+    global mockForecastDictionary
+    global realForecastDictionary
+    nameOfBestAlgorithm = 'LSTM'
+    minData = rmse(testY, mockForecastDictionary[nameOfBestAlgorithm])
+    rms = 0
+    for algorithm in realForecastDictionary.keys():
+        rms = rmse(testY, mockForecastDictionary[algorithm])
+        if rms < minData:
+            nameOfBestAlgorithm = algorithm
+
+    return nameOfBestAlgorithm
 def ProcessResultGetter(processId):
 
     status=FirebaseDatabaseManager.GetOutputDataStatus(processId)
