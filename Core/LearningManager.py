@@ -15,6 +15,16 @@ mockForecastDictionary = {}
 realForecastDictionary = {}
 
 def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
+    #TODO make dayOrWeekOrMonth parameter
+    dayOrWeekOrMonth='week'
+    # options:
+    # 'day', 'week', 'month'
+
+    feature = 'DayOfWeek_WeekNumber_Month_Season'
+    # options:
+    # dayOrWeekOrMonth='day': 'DayOfWeek_WeekNumber_Month_Season','DayOfWeek01_WeekNumber_Month_Season'//
+    # dayOrWeekOrMonth='week': 'WeekNumber_Month_Season_Year'
+
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "start of learning #" + str(processId), DefineManager.LOG_LEVEL_INFO)
 
     global mockForecastDictionary
@@ -42,7 +52,7 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     # TODO bayseian에 대해서는 input값이 0인 상황처리 필요
     y = list(np.log(rawArrayDatas[1][:-forecastDay]))
     sales = list(zip(ds, y))
-    txsForRealForecastBayesian = pd.DataFrame(data=sales, columns=['date', 'sales'])
+    txsForRealForecastBayesian = pd.DataFrame(data=sales, columns=['ds', 'y'])
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner",
                                    "txsForRealForecastBayesian create success",
                                    DefineManager.LOG_LEVEL_INFO)
@@ -51,7 +61,7 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     #TODO bayseian에 대해서는 input값이 0인 상황처리 필요
     y= list(np.log(rawArrayDatas[1][:-3*forecastDay]))
     sales = list(zip(ds, y))
-    txsForMockForecastBayseian =pd.DataFrame(data=sales, columns=['date', 'sales'])
+    txsForMockForecastBayseian =pd.DataFrame(data=sales, columns=['ds', 'y'])
     LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "txsForMockForecastBayseian create success",
                                    DefineManager.LOG_LEVEL_INFO)
 
@@ -60,7 +70,7 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
 
 
     dayOrWeekOrMonth='week' # 'day', 'week', 'month'
-    if dayOrWeekOrMonth=='day':
+    if dayOrWeekOrMonth is 'day':
         ####LSTM
 
         #select feature module
@@ -79,18 +89,16 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
         #알고리즘 비교
         nameOfBestAlgorithm= AlgorithmCompare(testY)
         ####더 좋은 알고리즘 호출
-        if nameOfBestAlgorithm=='LSTM':
+        if nameOfBestAlgorithm is 'LSTM':
             tf.reset_default_graph()
             realForecastDictionary['LSTM'] = LSTM(txsForRealForecastLstm, forecastDay)
             LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "LSTMrealForecast success",
                                            DefineManager.LOG_LEVEL_INFO)
 
-        elif nameOfBestAlgorithm=='Bayseian':
+        elif nameOfBestAlgorithm is 'Bayseian':
             realForecastDictionary['Bayseian']=Bayseian(txsForRealForecastBayesian,forecastDay,'day')
 
-
-
-    elif dayOrWeekOrMonth=='week':
+    elif dayOrWeekOrMonth is 'week':
         ####LSTM
 
         # select feature module
@@ -109,13 +117,13 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
         # 알고리즘 비교
         nameOfBestAlgorithm = AlgorithmCompare(testY)
         ####더 좋은 알고리즘 호출
-        if nameOfBestAlgorithm == 'LSTM':
+        if nameOfBestAlgorithm is 'LSTM':
             tf.reset_default_graph()
             realForecastDictionary['LSTM'] = LSTM(txsForRealForecastLstm, forecastDay)
             LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "LSTMrealForecast success",
                                            DefineManager.LOG_LEVEL_INFO)
 
-        elif nameOfBestAlgorithm == 'Bayseian':
+        elif nameOfBestAlgorithm is 'Bayseian':
             realForecastDictionary['Bayseian'] = Bayseian(txsForRealForecastBayesian, forecastDay, 'day')
 
 
@@ -186,19 +194,15 @@ def LSTM(txs, forecastDay, features):
         _x = x[i:i + seq_length]
         _y = y[i + seq_length:i + seq_length + forecastDay]
         _y = np.reshape(_y, (forecastDay))
-        print(_x, "->", _y)
         dataX.append(_x)
         dataY.append(_y)
-    print('data set length:', len(y) - seq_length - forecastDay + 1)
 
     train_size = int(len(dataY) - forecastDay)
     train_size = int(len(dataY) * 0.7)
     test_size = len(dataY) - train_size
-    print('train size:', train_size)
-    print('test size:', test_size)
+
     trainX, testX = np.array(dataX[0:train_size]), np.array(dataX[train_size:])
-    print('trainX:', trainX)
-    print('testX:', testX)
+
     trainY, testY = np.array(dataY[0:train_size]), np.array(dataY[train_size:])
 
     X = tf.placeholder(tf.float32, [None, seq_length, data_dim])
@@ -229,22 +233,14 @@ def LSTM(txs, forecastDay, features):
             count = count + 1
             _, step_loss = sess.run([train, loss], feed_dict={X: trainX, Y: trainY})
             print("[step: {}] loss: {}".format(count, step_loss))
-            if (step_loss < 0.5):
+            if (step_loss < 10):
                 break
 
         # Test step
         test_predict = minMaxDeNormalizer(sess.run(Y_pred, feed_dict={X: testX}), originalXY)
         realSale = minMaxDeNormalizer(testY[-1], originalXY)
-        # Plot predictions
 
-        plt.plot(realSale)  # 실제 sales 파란색
-        plt.plot(test_predict[-1])  # 예측 sales 주황색
-
-        plt.xlabel("Time Period")
-        plt.ylabel("Stock Price")
-        plt.show()
-
-    return test_predict[-1]
+    return list(test_predict[-1])
 
 def Bayseian(txs, forecastDay, unit):
     global mockForecastDictionary
@@ -284,9 +280,8 @@ def Bayseian(txs, forecastDay, unit):
                                            DefineManager.LOG_LEVEL_INFO)
 
 
-    realForecastDictionary['Bayseian'] = [np.exp(y) for y in forecastProphetTable['yhat'][-forecastDay:]]
     # date = [d.strftime('%Y-%m-%d') for d in forecastProphetTable['ds']]
-    return
+    return [np.exp(y) for y in forecastProphetTable['yhat'][-forecastDay:]]
 
 def rmse(a,b):
     sum=0
@@ -310,7 +305,7 @@ def AlgorithmCompare(testY):
     nameOfBestAlgorithm = 'LSTM'
     minData = rmse(testY, mockForecastDictionary[nameOfBestAlgorithm])
     rms = 0
-    for algorithm in realForecastDictionary.keys():
+    for algorithm in mockForecastDictionary.keys():
         rms = rmse(testY, mockForecastDictionary[algorithm])
         if rms < minData:
             nameOfBestAlgorithm = algorithm
@@ -322,11 +317,11 @@ def ProcessResultGetter(processId):
 
     status=FirebaseDatabaseManager.GetOutputDataStatus(processId)
 
-    if(status==DefineManager.ALGORITHM_STATUS_DONE):
+    if(status is DefineManager.ALGORITHM_STATUS_DONE):
         date= FirebaseDatabaseManager.GetOutputDateArray(processId)
         data= FirebaseDatabaseManager.GetOutputDataArray(processId)
         return [date, data], DefineManager.ALGORITHM_STATUS_DONE
-    elif(status==DefineManager.ALGORITHM_STATUS_WORKING):
+    elif(status is DefineManager.ALGORITHM_STATUS_WORKING):
         return [[], DefineManager.ALGORITHM_STATUS_WORKING]
     else:
         LoggingManager.PrintLogMessage("LearningManager", "ProcessResultGetter",
