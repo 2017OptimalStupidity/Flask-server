@@ -119,12 +119,12 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
         ####더 좋은 알고리즘 호출
         if nameOfBestAlgorithm is 'LSTM':
             tf.reset_default_graph()
-            realForecastDictionary['LSTM'] = LSTM(txsForRealForecastLstm, forecastDay)
+            realForecastDictionary['LSTM'] = LSTM(txsForRealForecastLstm, forecastDay,feature)
             LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "LSTMrealForecast success",
                                            DefineManager.LOG_LEVEL_INFO)
 
         elif nameOfBestAlgorithm is 'Bayseian':
-            realForecastDictionary['Bayseian'] = Bayseian(txsForRealForecastBayesian, forecastDay, 'day')
+            realForecastDictionary['Bayseian'] = Bayseian(txsForRealForecastBayesian, forecastDay, 'week')
 
 
         ####################################################################################BAYSEIAN
@@ -233,7 +233,7 @@ def LSTM(txs, forecastDay, features):
             count = count + 1
             _, step_loss = sess.run([train, loss], feed_dict={X: trainX, Y: trainY})
             print("[step: {}] loss: {}".format(count, step_loss))
-            if (step_loss < 10):
+            if (step_loss < 0.5):
                 break
 
         # Test step
@@ -252,14 +252,14 @@ def Bayseian(txs, forecastDay, unit):
             model.fit(txs)
             future = model.make_future_dataframe(periods=forecastDay)
             forecastProphetTable = model.predict(future)
-            LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "realforecast success",
+            LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BayseianforecastDay success",
                                            DefineManager.LOG_LEVEL_INFO)
         else:
             model = Prophet(yearly_seasonality=True)
             model.fit(txs)
             future = model.make_future_dataframe(periods=forecastDay)
             forecastProphetTable = model.predict(future)
-            LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "realforecast success",
+            LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BayseianforecastDay_YearlySeasonality success",
                                            DefineManager.LOG_LEVEL_INFO)
 
     elif unit is 'week':
@@ -268,7 +268,7 @@ def Bayseian(txs, forecastDay, unit):
             model.fit(txs)
             future = model.make_future_dataframe(periods=forecastDay,freq='w')
             forecastProphetTable = model.predict(future)
-            LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "realforecast success",
+            LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BayseianforecastWeek success",
                                            DefineManager.LOG_LEVEL_INFO)
 
         else:
@@ -276,7 +276,7 @@ def Bayseian(txs, forecastDay, unit):
             model.fit(txs)
             future = model.make_future_dataframe(periods=forecastDay,freq='w')
             forecastProphetTable = model.predict(future)
-            LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "realforecast success",
+            LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "BayseianforecastWeek_YearlySeasonality success",
                                            DefineManager.LOG_LEVEL_INFO)
 
 
@@ -301,7 +301,6 @@ def minMaxDeNormalizer(data, originalData):
 
 def AlgorithmCompare(testY):
     global mockForecastDictionary
-    global realForecastDictionary
     nameOfBestAlgorithm = 'LSTM'
     minData = rmse(testY, mockForecastDictionary[nameOfBestAlgorithm])
     rms = 0
