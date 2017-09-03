@@ -16,7 +16,7 @@ realForecastDictionary = {}
 
 def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     #TODO make dayOrWeekOrMonth parameter
-    dayOrWeekOrMonth='week'
+    dayOrWeekOrMonth='day'
     # options:
     # 'day', 'week', 'month'
 
@@ -69,7 +69,6 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
     testY= rawArrayDatas[1][-3*forecastDay:-forecastDay]
 
 
-    dayOrWeekOrMonth='week' # 'day', 'week', 'month'
     if dayOrWeekOrMonth is 'day':
         ####LSTM
 
@@ -128,6 +127,8 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
 
 
         ####################################################################################BAYSEIAN
+    # tf.reset_default_graph()
+    # realForecastDictionary['LSTM'] = LSTM(txsForRealForecastLstm, forecastDay, feature)
 
     data = rawArrayDatas[1][:-forecastDay] + realForecastDictionary[nameOfBestAlgorithm]
     date= rawArrayDatas[0]
@@ -138,7 +139,8 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
 
 
 def LSTM(txs, forecastDay, features):
-    tf.set_random_seed(7)
+    tf.reset_default_graph()
+    tf.set_random_seed(77)
     # Add basic date related features to the table
     year = lambda x: datetime.strptime(x, "%Y-%m-%d").year
     dayOfWeek = lambda x: datetime.strptime(x, "%Y-%m-%d").weekday()
@@ -185,8 +187,8 @@ def LSTM(txs, forecastDay, features):
     # hidden_dim은 정말 임의로 설정
     hidden_dim = 100
     # learning rate은 배우는 속도(너무 크지도, 작지도 않게 설정)
-    learning_rate = 0.0005
-
+    learning_rate = 0.001
+    iterations=1000
     # Build a series dataset(seq_length에 해당하는 전날 X와 다음 forecastDays에 해당하는 Y)
     x = xy
     y = xy[:, [-1]]
@@ -200,7 +202,7 @@ def LSTM(txs, forecastDay, features):
         dataY.append(_y)
 
     train_size = int(len(dataY) - forecastDay)
-    train_size = int(len(dataY) * 0.7)
+    # train_size = int(len(dataY) * 0.7)
     test_size = len(dataY) - train_size
 
     trainX, testX = np.array(dataX[0:train_size]), np.array(dataX[train_size:])
@@ -231,12 +233,11 @@ def LSTM(txs, forecastDay, features):
         sess.run(init)
 
         # Training step
-        while (1):
-            count = count + 1
+        for i in range(iterations):
+
             _, step_loss = sess.run([train, loss], feed_dict={X: trainX, Y: trainY})
-            print("[step: {}] loss: {}".format(count, step_loss))
-            if (step_loss < 0.5):
-                break
+            print("[step: {}] loss: {}".format(i, step_loss))
+
 
         # Test step
         test_predict = minMaxDeNormalizer(sess.run(Y_pred, feed_dict={X: testX}), originalXY)
