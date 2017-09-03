@@ -91,7 +91,7 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
         ####더 좋은 알고리즘 호출
         if nameOfBestAlgorithm is 'LSTM':
             tf.reset_default_graph()
-            realForecastDictionary['LSTM'] = LSTM(txsForRealForecastLstm, forecastDay)
+            realForecastDictionary['LSTM'] = LSTM(txsForRealForecastLstm, forecastDay,feature)
             LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "LSTMrealForecast success",
                                            DefineManager.LOG_LEVEL_INFO)
 
@@ -131,6 +131,8 @@ def LearningModuleRunner(rawArrayDatas, processId, forecastDay):
 
     data = rawArrayDatas[1][:-forecastDay] + realForecastDictionary[nameOfBestAlgorithm]
     date= rawArrayDatas[0]
+    LoggingManager.PrintLogMessage("LearningManager", "LearningModuleRunner", "FirebaseUploadPrepare ",
+                                   DefineManager.LOG_LEVEL_INFO)
     FirebaseDatabaseManager.StoreOutputData(processId, resultArrayData=data, resultArrayDate= date, status=DefineManager.ALGORITHM_STATUS_DONE)
     return
 
@@ -239,8 +241,7 @@ def LSTM(txs, forecastDay, features):
         # Test step
         test_predict = minMaxDeNormalizer(sess.run(Y_pred, feed_dict={X: testX}), originalXY)
         realSale = minMaxDeNormalizer(testY[-1], originalXY)
-
-    return list(test_predict[-1])
+    return test_predict[-1].tolist()
 
 def Bayseian(txs, forecastDay, unit):
     global mockForecastDictionary
